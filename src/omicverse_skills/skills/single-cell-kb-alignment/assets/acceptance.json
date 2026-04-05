@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-kb-alignment",
+  "sample_requests": [
+    "Convert the OmicVerse alignment notebook into a reusable skill",
+    "Build a kb reference and quantify single-cell FASTQs with OmicVerse"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "alignment",
+    "reference",
+    "fastq",
+    "count",
+    "single-cell",
+    "triggerable"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.alignment.single.ref",
+    "ov.alignment.single.count",
+    "workflow='standard'",
+    "nucleus",
+    "technology='10XV3'",
+    "BULK",
+    "filter_barcodes",
+    "h5ad_file",
+    "source-notebook-map.md",
+    "workflow-selection.md",
+    "source-grounding.md",
+    "compatibility"
+  ],
+  "required_paths": [
+    "references/workflow-selection.md",
+    "references/source-notebook-map.md",
+    "references/source-grounding.md",
+    "references/compatibility.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 180,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "synthetic-kb-alignment",
+      "tier": "full",
+      "python_path": "/Users/fernandozeng/miniforge3/envs/omictest/bin/python",
+      "conda_env": "omictest",
+      "env": {
+        "PYTHONPATH": "../omicverse",
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} - <<'PY'\nfrom __future__ import annotations\n\nimport json\nimport os\nimport pathlib\nimport tempfile\n\nimport anndata as ad\nimport numpy as np\nimport scanpy as sc\n\nimport omicverse as ov\n\nkb_script = \"\"\"#!/usr/bin/env python3\nfrom __future__ import annotations\n\nimport json\nimport os\nimport pathlib\nimport sys\n\nimport anndata as ad\nimport numpy as np\n\nargs = sys.argv[1:]\nmode = args[0]\nlog_path = pathlib.Path(os.environ['KB_LOG'])\nlog_path.parent.mkdir(parents=True, exist_ok=True)\nwith log_path.open('a', encoding='utf-8') as handle:\n    handle.write(json.dumps(args) + '\\\\n')\n\nif mode == 'ref':\n    index_path = pathlib.Path(args[args.index('-i') + 1])\n    t2g_path = pathlib.Path(args[args.index('-g') + 1])\n    index_path.parent.mkdir(parents=True, exist_ok=True)\n    t2g_path.parent.mkdir(parents=True, exist_ok=True)\n    index_path.write_text('index\\\\n', encoding='utf-8')\n    t2g_path.write_text('t2g\\\\n', encoding='utf-8')\n    sys.exit(0)\n\nif mode == 'count':\n    output_path = pathlib.Path(args[args.index('-o') + 1])\n    output_path.mkdir(parents=True, exist_ok=True)\n    adata = ad.AnnData(X=np.array([[1.0, 2.0], [3.0, 4.0]], dtype=float))\n    adata.obs_names = ['cell1', 'cell2']\n    adata.var_names = ['gene1', 'gene2']\n    adata.write_h5ad(output_path / 'adata.h5ad')\n    (output_path / 'matrix.mtx').write_text('%%MatrixMarket matrix coordinate real general\\\\n2 2 1\\\\n1 1 1\\\\n', encoding='utf-8')\n    (output_path / 'barcodes.tsv').write_text('cell1\\\\ncell2\\\\n', encoding='utf-8')\n    (output_path / 'genes.tsv').write_text('gene1\\\\tgene1\\\\ngene2\\\\tgene2\\\\n', encoding='utf-8')\n    sys.exit(0)\n\nsys.exit(2)\n\"\"\"\n\nwith tempfile.TemporaryDirectory() as td:\n    root = pathlib.Path(td)\n    bin_dir = root / 'bin'\n    inputs = root / 'inputs'\n    ref_std = root / 'outputs' / 'ref_std'\n    ref_nuc = root / 'outputs' / 'ref_nuc'\n    count_out = root / 'outputs' / 'count'\n    bulk_out = root / 'outputs' / 'bulk'\n    for path in (bin_dir, inputs, ref_std, ref_nuc, count_out, bulk_out):\n        path.mkdir(parents=True, exist_ok=True)\n\n    kb_path = bin_dir / 'kb'\n    kb_path.write_text(kb_script, encoding='utf-8')\n    kb_path.chmod(0o755)\n\n    (inputs / 'ref.fa').write_text('>tx1\\nACGT\\n>tx2\\nTGCA\\n', encoding='utf-8')\n    (inputs / 'ref.gtf').write_text(\n        'chr1\\tsrc\\tgene\\t1\\t4\\t.\\t+\\t.\\tgene_id \"g1\"; transcript_id \"tx1\";\\n'\n        'chr1\\tsrc\\tgene\\t5\\t8\\t.\\t+\\t.\\tgene_id \"g2\"; transcript_id \"tx2\";\\n',\n        encoding='utf-8',\n    )\n    (inputs / 'read_R1.fastq').write_text('@r1\\nACGT\\n+\\n!!!!\\n', encoding='utf-8')\n    (inputs / 'read_R2.fastq').write_text('@r1\\nTGCA\\n+\\n!!!!\\n', encoding='utf-8')\n\n    os.environ['PATH'] = f\"{bin_dir}:{os.environ['PATH']}\"\n    os.environ['KB_LOG'] = str(root / 'calls.log')\n\n    ref_info = ov.alignment.single.ref(\n        index_path=str(ref_std / 'index.idx'),\n        t2g_path=str(ref_std / 't2g.txt'),\n        fasta_paths=str(inputs / 'ref.fa'),\n        gtf_paths=str(inputs / 'ref.gtf'),\n    )\n    ref_nuc_info = ov.alignment.single.ref(\n        index_path=str(ref_nuc / 'index.idx'),\n        t2g_path=str(ref_nuc / 't2g.txt'),\n        fasta_paths=str(inputs / 'ref.fa'),\n        gtf_paths=str(inputs / 'ref.gtf'),\n        workflow='standard',\n        nucleus=True,\n    )\n    count_info = ov.alignment.single.count(\n        index_path=str(ref_std / 'index.idx'),\n        t2g_path=str(ref_std / 't2g.txt'),\n        technology='10XV3',\n        fastq_paths=[str(inputs / 'read_R1.fastq'), str(inputs / 'read_R2.fastq')],\n        output_path=str(count_out),\n        h5ad=True,\n        filter_barcodes=True,\n    )\n    try:\n        ov.alignment.single.count(\n            index_path=str(ref_std / 'index.idx'),\n            t2g_path=str(ref_std / 't2g.txt'),\n            technology='BULK',\n            fastq_paths=str(inputs / 'read_R1.fastq'),\n            output_path=str(bulk_out),\n            filter_barcodes=True,\n        )\n    except ValueError as exc:\n        bulk_error = str(exc)\n    else:\n        bulk_error = None\n\n    calls = [json.loads(line) for line in pathlib.Path(os.environ['KB_LOG']).read_text(encoding='utf-8').splitlines()]\n    count_h5ad = count_info.get('h5ad_file')\n    summary = {\n        'ref_workflow': ref_info['workflow'],\n        'ref_nucleus_workflow': ref_nuc_info['workflow'],\n        'ref_index_exists': pathlib.Path(ref_info['index_path']).exists(),\n        'ref_t2g_exists': pathlib.Path(ref_info['t2g_path']).exists(),\n        'count_h5ad_exists': pathlib.Path(count_h5ad).exists() if count_h5ad else False,\n        'count_matrix_exists': pathlib.Path(count_info['matrix_file']).exists() if 'matrix_file' in count_info else False,\n        'count_shape': list(sc.read_h5ad(count_h5ad).shape) if count_h5ad else None,\n        'bulk_error': bulk_error,\n        'ref_args_has_workflow': '--workflow' in calls[0],\n        'count_args_has_filter': '--filter' in calls[2] if len(calls) > 2 else False,\n        'count_args_has_h5ad': '--h5ad' in calls[2] if len(calls) > 2 else False,\n    }\n    print(json.dumps(summary, sort_keys=True))\nPY",
+      "timeout_seconds": 180,
+      "expect_stdout_contains": [
+        "\"ref_workflow\": \"standard\"",
+        "\"ref_nucleus_workflow\": \"nucleus\"",
+        "\"ref_index_exists\": true",
+        "\"ref_t2g_exists\": true",
+        "\"count_h5ad_exists\": true",
+        "\"count_matrix_exists\": true",
+        "\"count_shape\": [2, 2]",
+        "\"bulk_error\": \"filter_barcodes/--filter is not supported for technology='BULK'\"",
+        "\"ref_args_has_workflow\": false",
+        "\"count_args_has_filter\": true",
+        "\"count_args_has_h5ad\": true"
+      ]
+    }
+  ]
+}

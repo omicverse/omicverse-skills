@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-lda-topic-clustering",
+  "sample_requests": [
+    "Convert this OmicVerse LDA topic notebook section into a reusable skill",
+    "Run OmicVerse LDA topic clustering with MIRA on a count-like AnnData object"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "lda",
+    "topic",
+    "anndata",
+    "mira",
+    "triggerable"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Stage Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "feature_type",
+    "ondisk",
+    "predicted",
+    "LDA_cluster",
+    "get_results_rfc",
+    "LDA_threshold",
+    "use_rep"
+  ],
+  "required_paths": [
+    "references/branch-selection.md",
+    "references/compatibility.md",
+    "references/source-grounding.md",
+    "references/source-notebook-map.md",
+    "scripts/lda_smoke.py"
+  ],
+  "validation_budget": {
+    "smoke_mode": "import_only",
+    "max_wall_seconds": 240,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "lda-constructor-smoke",
+      "tier": "import",
+      "conda_env": "omicverse",
+      "env": {
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} examples/omicverse-single-skills/omicverse-single-cell-lda-topic-clustering/scripts/lda_smoke.py",
+      "timeout_seconds": 240,
+      "expect_stdout_contains": [
+        "\"callable_present\": true",
+        "\"counts_layer\": true",
+        "\"has_pca\": true"
+      ]
+    }
+  ]
+}

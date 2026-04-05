@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-clustering-backends",
+  "sample_requests": [
+    "Convert this OmicVerse clustering notebook into a reusable skill",
+    "Run Leiden, Louvain, or GMM clustering on a prepared AnnData embedding"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "clustering",
+    "anndata",
+    "leiden",
+    "louvain",
+    "gmm",
+    "triggerable"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Stage Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "leiden",
+    "louvain",
+    "scICE",
+    "GMM",
+    "use_rep",
+    "n_components",
+    "gmm_cluster",
+    "mclust"
+  ],
+  "required_paths": [
+    "references/branch-selection.md",
+    "references/compatibility.md",
+    "references/source-grounding.md",
+    "references/source-notebook-map.md",
+    "scripts/clustering_smoke.py"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 180,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "clustering-core-smoke",
+      "tier": "full",
+      "conda_env": "omicverse",
+      "env": {
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} examples/omicverse-single-skills/omicverse-single-cell-clustering-backends/scripts/clustering_smoke.py",
+      "timeout_seconds": 180,
+      "expect_stdout_contains": [
+        "\"gmm_cluster\": true",
+        "\"leiden\": true",
+        "\"mclust\": true"
+      ]
+    }
+  ]
+}

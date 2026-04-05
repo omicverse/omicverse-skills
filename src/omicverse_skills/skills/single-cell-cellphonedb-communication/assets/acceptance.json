@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-cellphonedb-communication",
+  "sample_requests": [
+    "Convert the OmicVerse CellPhoneDB notebook into a reusable skill",
+    "Run CellPhoneDB communication analysis on annotated single-cell AnnData with OmicVerse",
+    "Choose pathway aggregation, bubble, and signaling-role branches for OmicVerse CellPhoneDB"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "cellphonedb",
+    "single-cell",
+    "anndata",
+    "cellchat",
+    "pathway",
+    "communication"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.single.run_cellphonedb_v5",
+    "ov.pl.CellChatViz",
+    "compute_aggregated_network",
+    "compute_pathway_communication",
+    "get_significant_pathways_v2",
+    "netVisual_aggregate",
+    "extractEnrichedLR",
+    "netVisual_bubble_marsilea",
+    "netAnalysis_computeCentrality",
+    "netAnalysis_signalingRole_heatmap",
+    "layout='circle'",
+    "pattern='outgoing'"
+  ],
+  "required_paths": [
+    "references/branch-selection.md",
+    "references/source-grounding.md",
+    "references/source-notebook-map.md",
+    "references/compatibility.md",
+    "scripts/cpdb_smoke.py"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 180,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "cpdb-local-smoke",
+      "tier": "full",
+      "conda_env": "omicverse",
+      "env": {
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} examples/omicverse-single-skills/omicverse-single-cell-cellphonedb-communication/scripts/cpdb_smoke.py",
+      "timeout_seconds": 180,
+      "expect_stdout_contains": [
+        "\"centrality_keys\": [\"flow_betweenness\", \"indegree\", \"information\", \"outdegree\", \"overall\"]",
+        "\"count_shape\": [3, 3]",
+        "\"has_means_layer\": true",
+        "\"has_pvalues_layer\": true",
+        "\"mode\": \"cellphonedb_v5\"",
+        "\"result_keys_ok\": true",
+        "\"sender_receiver_cols\": true",
+        "\"weight_shape\": [3, 3]"
+      ]
+    },
+    {
+      "name": "cpdb-interface-smoke",
+      "tier": "import",
+      "conda_env": "omicverse",
+      "command": "${PYTHON} scripts/inspect_python_interface.py omicverse.single.run_cellphonedb_v5 --pretty",
+      "timeout_seconds": 90,
+      "expect_stdout_contains": [
+        "\"iterations\"",
+        "\"threshold\"",
+        "\"pvalue\"",
+        "\"threads\"",
+        "\"source_available\": true"
+      ]
+    },
+    {
+      "name": "pathway-interface-smoke",
+      "tier": "import",
+      "conda_env": "omicverse",
+      "command": "${PYTHON} -c \"import inspect; from omicverse.pl._cpdbviz import CellChatViz; print(inspect.getsource(CellChatViz.compute_pathway_communication))\"",
+      "timeout_seconds": 90,
+      "expect_stdout_contains": [
+        "def compute_pathway_communication",
+        "if method == 'mean'",
+        "elif method == 'sum'",
+        "elif method == 'max'",
+        "elif method == 'median'"
+      ]
+    },
+    {
+      "name": "bubble-interface-smoke",
+      "tier": "import",
+      "conda_env": "omicverse",
+      "command": "${PYTHON} scripts/inspect_python_interface.py omicverse.pl._cpdbviz_plus:CellChatVizPlus.netVisual_bubble_marsilea --pretty",
+      "timeout_seconds": 90,
+      "expect_stdout_contains": [
+        "\"group_pathways\"",
+        "\"transpose\"",
+        "\"scale\"",
+        "\"show_sender_colors\"",
+        "\"source_available\": true"
+      ]
+    },
+    {
+      "name": "role-heatmap-interface-smoke",
+      "tier": "import",
+      "conda_env": "omicverse",
+      "command": "${PYTHON} scripts/inspect_python_interface.py omicverse.pl._cpdbviz_plus:CellChatVizPlus.netAnalysis_signalingRole_heatmap --pretty",
+      "timeout_seconds": 90,
+      "expect_stdout_contains": [
+        "\"pattern\"",
+        "outgoing",
+        "incoming",
+        "\"row_scale\"",
+        "\"source_available\": true"
+      ]
+    }
+  ]
+}

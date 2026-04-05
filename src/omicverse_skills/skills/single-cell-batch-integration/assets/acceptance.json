@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-batch-integration",
+  "sample_requests": [
+    "Convert this OmicVerse single-cell batch integration notebook into a reusable skill",
+    "Run harmony or combat batch integration on a preprocessed AnnData and benchmark the embeddings"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "batch",
+    "integration",
+    "anndata",
+    "harmony",
+    "combat",
+    "benchmarking",
+    "triggerable"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Stage Selection",
+    "## Backend Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "harmony",
+    "combat",
+    "scanorama",
+    "scVI",
+    "CellANOVA",
+    "Concord",
+    "X_pca_harmony",
+    "X_combat",
+    "X_scVI",
+    "Benchmarker"
+  ],
+  "required_paths": [
+    "references/backend-selection.md",
+    "references/compatibility.md",
+    "references/source-grounding.md",
+    "references/source-notebook-map.md",
+    "scripts/batch_integration_smoke.py"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 240,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "batch-integration-and-benchmark-smoke",
+      "tier": "full",
+      "conda_env": "omicverse",
+      "env": {
+        "JAX_PLATFORMS": "cpu",
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} examples/omicverse-single-skills/omicverse-single-cell-batch-integration/scripts/batch_integration_smoke.py",
+      "timeout_seconds": 240,
+      "expect_stdout_contains": [
+        "\"benchmark_has_combat\": true",
+        "\"benchmark_has_harmony\": true",
+        "\"benchmark_nonempty\": true",
+        "\"x_combat\": true",
+        "\"x_harmony\": true",
+        "\"x_pca_harmony\": true"
+      ]
+    }
+  ]
+}

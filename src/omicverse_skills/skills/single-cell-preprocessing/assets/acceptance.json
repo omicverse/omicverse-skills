@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-preprocessing",
+  "sample_requests": [
+    "Convert this OmicVerse preprocessing notebook into a reusable skill",
+    "Run the OmicVerse single-cell preprocessing and marker workflow on a tiny synthetic AnnData object"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "preprocessing",
+    "marker",
+    "anndata",
+    "notebooks",
+    "triggerable"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Stage Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "qc",
+    "preprocess",
+    "scale",
+    "pca",
+    "neighbors",
+    "leiden",
+    "find_markers",
+    "get_markers",
+    "markers_dotplot",
+    "mode",
+    "method",
+    "cosg",
+    "wilcoxon",
+    "shiftlog|pearson",
+    "branch selection",
+    "execution spine",
+    "validation",
+    "source-grounding.md",
+    "source-notebook-map.md"
+  ],
+  "required_paths": [
+    "references/branch-selection.md",
+    "references/compatibility.md",
+    "references/source-notebook-map.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 180,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "cpu-pipeline-wilcoxon",
+      "tier": "full",
+      "conda_env": "omictest",
+      "env": {
+        "PYTHONPATH": "/Users/fernandozeng/Desktop/analysis/omicverse",
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} -u - <<'PY'\nfrom __future__ import annotations\n\nimport json\nimport numpy as np\nimport pandas as pd\nimport anndata as ad\nimport omicverse as ov\n\nif hasattr(ov.settings, 'cpu_init'):\n    ov.settings.cpu_init()\n\nrng = np.random.default_rng(0)\nX = rng.poisson(lam=4, size=(60, 40)).astype(float)\nX[:30, :5] += 25\nX[30:, 5:10] += 25\nvar_names = [f'G{i}' for i in range(40)]\nvar_names[0] = 'MT-1'\nvar_names[1] = 'MT-2'\nadata = ad.AnnData(X=X, obs=pd.DataFrame(index=[f'cell{i}' for i in range(60)]), var=pd.DataFrame(index=var_names))\nadata.var_names_make_unique()\nadata.obs_names_make_unique()\n\nqc_status = None\ntry:\n    q = ov.pp.qc(adata.copy(), mode='mads', doublets=False, min_genes=0, min_cells=0)\n    qc_status = {'ok': True, 'shape': list(q.shape)}\nexcept Exception as exc:\n    qc_status = {'ok': False, 'error': f'{type(exc).__name__}: {exc}'}\n\nadata = ov.pp.preprocess(adata, mode='shiftlog|pearson', n_HVGs=20, target_sum=1e4, identify_robust=False)\nadata.raw = adata\nadata = adata[:, adata.var.highly_variable_features].copy()\nov.pp.scale(adata)\nov.pp.pca(adata, layer='scaled', n_pcs=10)\nov.pp.neighbors(adata, n_neighbors=10, n_pcs=10, use_rep='scaled|original|X_pca', method='umap')\nov.pp.umap(adata)\nov.pp.leiden(adata, resolution=0.5)\nov.single.find_markers(adata, groupby='leiden', method='wilcoxon', n_genes=5, key_added='rank_genes_groups', pts=True)\nmarkers = ov.single.get_markers(adata, n_genes=5, key='rank_genes_groups', return_type='dict')\n\nsummary = {\n    'mode': ov.settings.mode,\n    'qc': qc_status,\n    'layers': sorted(list(adata.layers.keys())),\n    'obs_keys': sorted([k for k in adata.obs_keys() if k in {'leiden'}]),\n    'obsm_keys': sorted([k for k in adata.obsm_keys() if k in {'scaled|original|X_pca', 'X_umap'}]),\n    'marker_groups': sorted(markers.keys()),\n    'first_group_count': len(next(iter(markers.values()))) if markers else 0,\n}\nprint(json.dumps(summary, sort_keys=True))\nPY",
+      "timeout_seconds": 180,
+      "expect_stdout_contains": [
+        "\"mode\": \"cpu\"",
+        "\"qc\": {\"ok\": true",
+        "\"layers\": [\"counts\", \"scaled\"]",
+        "\"obs_keys\": [\"leiden\"]",
+        "\"obsm_keys\": [\"X_umap\", \"scaled|original|X_pca\"]",
+        "\"marker_groups\": [\"0\", \"1\"]",
+        "\"first_group_count\": 5"
+      ]
+    },
+    {
+      "name": "cosg-marker-dotplot",
+      "tier": "full",
+      "conda_env": "omictest",
+      "env": {
+        "PYTHONPATH": "/Users/fernandozeng/Desktop/analysis/omicverse",
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} -u - <<'PY'\nfrom __future__ import annotations\n\nimport json\nimport numpy as np\nimport pandas as pd\nimport anndata as ad\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nimport omicverse as ov\n\nif hasattr(ov.settings, 'cpu_init'):\n    ov.settings.cpu_init()\n\nrng = np.random.default_rng(1)\nX = rng.poisson(lam=4, size=(48, 24)).astype(float)\nX[:24, :4] += 30\nX[24:, 4:8] += 30\nadata = ad.AnnData(X=X, obs=pd.DataFrame(index=[f'cell{i}' for i in range(48)]), var=pd.DataFrame(index=[f'G{i}' for i in range(24)]))\nadata.var_names_make_unique()\nadata = ov.pp.preprocess(adata, mode='shiftlog|pearson', n_HVGs=12, target_sum=1e4, identify_robust=False)\nadata.raw = adata\nadata = adata[:, adata.var.highly_variable_features].copy()\nov.pp.scale(adata)\nov.pp.pca(adata, layer='scaled', n_pcs=8)\nov.pp.neighbors(adata, n_neighbors=8, n_pcs=8, use_rep='scaled|original|X_pca')\nov.pp.leiden(adata, resolution=0.5)\nov.single.find_markers(adata, groupby='leiden', method='cosg', n_genes=4, key_added='cosg_markers', pts=True)\ndf = ov.single.get_markers(adata, n_genes=4, key='cosg_markers', return_type='dataframe')\nax = ov.pl.markers_dotplot(adata, groupby='leiden', key='cosg_markers', n_genes=4, show=False)\nplt.close('all')\nprint(json.dumps({'rows': int(df.shape[0]), 'groups': sorted(df['group'].astype(str).unique().tolist()), 'ax_type': type(ax).__name__}, sort_keys=True))\nPY",
+      "timeout_seconds": 180,
+      "expect_stdout_contains": [
+        "\"rows\": 8",
+        "\"groups\": [\"0\", \"1\"]",
+        "\"ax_type\": \"NoneType\""
+      ]
+    }
+  ]
+}

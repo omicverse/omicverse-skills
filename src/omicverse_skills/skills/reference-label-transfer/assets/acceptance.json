@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "skill": "omicverse-reference-label-transfer",
+  "sample_requests": [
+    "Transfer labels from a reference AnnData to a query AnnData with OmicVerse",
+    "Convert the OmicVerse reference annotation notebook into a reusable skill"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "reference",
+    "label",
+    "transfer",
+    "anndata",
+    "notebooks",
+    "triggerable"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "AnnotationRef",
+    "harmony",
+    "scVI",
+    "scanorama",
+    "preprocess",
+    "predict",
+    "harmony_prediction",
+    "scVI_prediction",
+    "scanorama_prediction",
+    "source-notebook-map.md",
+    "source-grounding.md",
+    "compatibility"
+  ],
+  "required_paths": [
+    "references/integration-method-selection.md",
+    "references/source-notebook-map.md",
+    "references/source-grounding.md",
+    "references/compatibility.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 180,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "synthetic-harmony-transfer",
+      "tier": "full",
+      "conda_env": "omictest",
+      "env": {
+        "PYTHONPATH": "../omicverse",
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} - <<'PY'\nfrom __future__ import annotations\n\nimport json\nimport os\nimport numpy as np\nimport pandas as pd\nimport anndata as ad\n\nos.environ.setdefault(\"MPLCONFIGDIR\", \"/tmp/mpl\")\nos.environ.setdefault(\"NUMBA_CACHE_DIR\", \"/tmp/numba\")\n\nfrom omicverse.single._annotation_ref import AnnotationRef\n\nrng = np.random.default_rng(0)\nngenes = 80\nnq = 30\nnr = 30\ngenes = [f\"G{i}\" for i in range(ngenes)]\nquery = ad.AnnData(X=rng.poisson(5, (nq, ngenes)).astype(float))\nref = ad.AnnData(X=rng.poisson(5, (nr, ngenes)).astype(float))\nquery.var_names = genes\nref.var_names = genes\nquery.obs_names = [f\"q{i}\" for i in range(nq)]\nref.obs_names = [f\"r{i}\" for i in range(nr)]\nref.obs[\"celltype\"] = pd.Categorical([\"T cell\"] * 10 + [\"B cell\"] * 10 + [\"Mono\"] * 10)\n\nar = AnnotationRef(query, ref, celltype_key=\"celltype\")\nar.preprocess(mode=\"shiftlog|pearson\", n_HVGs=60, batch_key=\"integrate_batch\")\nar.train(method=\"harmony\", n_pcs=20)\nad_pred = ar.predict(method=\"harmony\", n_neighbors=5)\n\nsummary = {\n    \"shape\": list(ad_pred.shape),\n    \"prediction_cols\": [c for c in ad_pred.obs.columns if \"prediction\" in c or \"uncertainty\" in c],\n    \"obsm_keys\": [k for k in ad_pred.obsm.keys() if \"harmony\" in k or k == \"X_pca\"],\n    \"harmony_prediction\": \"harmony_prediction\" in ad_pred.obs,\n    \"harmony_uncertainty\": \"harmony_uncertainty\" in ad_pred.obs,\n    \"x_pca_harmony_anno\": \"X_pca_harmony_anno\" in ad_pred.obsm,\n    \"pred_unique_count\": int(ad_pred.obs[\"harmony_prediction\"].astype(str).nunique()),\n}\nprint(json.dumps(summary, sort_keys=True))\nPY",
+      "timeout_seconds": 180,
+      "expect_stdout_contains": [
+        "\"harmony_prediction\": true",
+        "\"harmony_uncertainty\": true",
+        "\"x_pca_harmony_anno\": true",
+        "\"pred_unique_count\": 3",
+        "\"shape\": [30, 80]"
+      ]
+    }
+  ]
+}

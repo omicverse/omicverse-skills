@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-differential-abundance",
+  "sample_requests": [
+    "Convert this OmicVerse DCT notebook into a reusable skill",
+    "Run OmicVerse differential abundance between two conditions with a Milo-like backend"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "differential abundance",
+    "anndata",
+    "sccoda",
+    "milopy",
+    "triggerable"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Stage Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "sccoda",
+    "milopy",
+    "milo",
+    "sample_key",
+    "use_rep",
+    "mix_threshold",
+    "run_nuts",
+    "Mixed",
+    "embedding"
+  ],
+  "required_paths": [
+    "references/branch-selection.md",
+    "references/compatibility.md",
+    "references/source-grounding.md",
+    "references/source-notebook-map.md",
+    "scripts/dct_smoke.py"
+  ],
+  "validation_budget": {
+    "smoke_mode": "import_only",
+    "max_wall_seconds": 180,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "dct-milopy-constructor-smoke",
+      "tier": "import",
+      "conda_env": "omicverse",
+      "env": {
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} examples/omicverse-single-skills/omicverse-single-cell-differential-abundance/scripts/dct_smoke.py",
+      "timeout_seconds": 180,
+      "expect_stdout_contains": [
+        "\"constructor_ok\": true",
+        "\"method\": \"milopy\"",
+        "\"has_mdata\": true",
+        "\"has_milo_modality\": true",
+        "\"conditions_used\": [\"Control\", \"Salmonella\"]"
+      ]
+    }
+  ]
+}

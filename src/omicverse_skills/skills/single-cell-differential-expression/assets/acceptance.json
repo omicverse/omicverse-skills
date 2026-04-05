@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-differential-expression",
+  "sample_requests": [
+    "Convert this OmicVerse single-cell DEG notebook into a reusable skill",
+    "Run OmicVerse differential expression between two conditions inside one cell type"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "differential expression",
+    "anndata",
+    "wilcoxon",
+    "memento",
+    "triggerable"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Stage Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "wilcoxon",
+    "t-test",
+    "memento-de",
+    "celltype_group",
+    "max_cells",
+    "pct_ctrl",
+    "pct_test",
+    "pct_diff",
+    "use_raw",
+    "count"
+  ],
+  "required_paths": [
+    "references/branch-selection.md",
+    "references/compatibility.md",
+    "references/source-grounding.md",
+    "references/source-notebook-map.md",
+    "scripts/deg_smoke.py"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 180,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "deg-wilcoxon-smoke",
+      "tier": "full",
+      "conda_env": "omicverse",
+      "env": {
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} examples/omicverse-single-skills/omicverse-single-cell-differential-expression/scripts/deg_smoke.py",
+      "timeout_seconds": 180,
+      "expect_stdout_contains": [
+        "\"rows\": 30",
+        "\"has_required_columns\": true",
+        "\"celltypes_used\": [\"TA\"]",
+        "\"conditions_used\": [\"Control\", \"Salmonella\"]"
+      ]
+    }
+  ]
+}

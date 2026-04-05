@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-sctour-trajectory",
+  "sample_requests": [
+    "Convert the scTour part of this OmicVerse trajectory notebook into a reusable skill",
+    "Run the OmicVerse sctour branch on raw-count AnnData"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "sctour",
+    "trajectory",
+    "anndata",
+    "pseudotime",
+    "vector-field"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Stage Selection",
+    "## Input Contract",
+    "## Minimal Execution Pattern",
+    "## Constraints",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "sctour",
+    "loss_mode",
+    "nb",
+    "x_tnode",
+    "x_vf",
+    "raw counts",
+    "source-grounding.md",
+    "source-notebook-map.md"
+  ],
+  "required_paths": [
+    "references/compatibility.md",
+    "references/source-notebook-map.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skip",
+    "max_wall_seconds": 0,
+    "skip_reason": "The current local environment cannot import the external sctour package, so this branch was source-grounded but not empirically reproduced."
+  },
+  "smoke_commands": []
+}

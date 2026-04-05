@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-trajectory-inference",
+  "sample_requests": [
+    "Convert this OmicVerse trajectory notebook into a reusable skill",
+    "Run diffusion map or Palantir trajectory inference on a cluster-ready AnnData object"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "trajectory",
+    "anndata",
+    "diffusion_map",
+    "palantir",
+    "slingshot"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Constraints",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "trajinfer",
+    "diffusion_map",
+    "slingshot",
+    "palantir",
+    "paga",
+    "branch_masks",
+    "pcurvepy2",
+    "mellon",
+    "source-grounding.md",
+    "source-notebook-map.md"
+  ],
+  "required_paths": [
+    "references/branch-selection.md",
+    "references/compatibility.md",
+    "references/source-notebook-map.md",
+    "references/source-grounding.md",
+    "scripts/trajectory_smoke.py"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 240,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "diffusion-map-paga",
+      "tier": "full",
+      "conda_env": "omictest",
+      "env": {
+        "LOKY_MAX_CPU_COUNT": "1",
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba",
+        "PYTHONPATH": "/Users/fernandozeng/Desktop/analysis/omicverse-project/omicverse-core"
+      },
+      "command": "${PYTHON} -u examples/omicverse-single-skills/omicverse-single-cell-trajectory-inference/scripts/trajectory_smoke.py --branch diffusion_map",
+      "timeout_seconds": 120,
+      "expect_stdout_contains": [
+        "\"branch\": \"diffusion_map\"",
+        "\"has_dpt_pseudotime\": true",
+        "\"has_paga\": true",
+        "\"paga_groups\": \"clusters\""
+      ]
+    },
+    {
+      "name": "palantir-branch-paga",
+      "tier": "full",
+      "conda_env": "omictest",
+      "env": {
+        "LOKY_MAX_CPU_COUNT": "1",
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba",
+        "PYTHONPATH": "/Users/fernandozeng/Desktop/analysis/omicverse-project/omicverse-core"
+      },
+      "command": "${PYTHON} -u examples/omicverse-single-skills/omicverse-single-cell-trajectory-inference/scripts/trajectory_smoke.py --branch palantir",
+      "timeout_seconds": 120,
+      "expect_stdout_contains": [
+        "\"branch\": \"palantir\"",
+        "\"patched_magic_single_process\": true",
+        "\"has_palantir_pseudotime\": true",
+        "\"has_palantir_entropy\": true",
+        "\"has_fate_probabilities\": true",
+        "\"has_branch_masks\": true",
+        "\"has_paga\": true"
+      ]
+    }
+  ]
+}

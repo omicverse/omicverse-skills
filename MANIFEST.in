@@ -1,0 +1,7 @@
+include README.md
+include LICENSE
+include pyproject.toml
+recursive-include src/omicverse_skills/skills *.md
+global-exclude .DS_Store
+global-exclude *.py[cod]
+global-exclude __pycache__

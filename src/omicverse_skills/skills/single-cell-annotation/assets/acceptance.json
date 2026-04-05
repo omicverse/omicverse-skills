@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-annotation",
+  "sample_requests": [
+    "Annotate a clustered AnnData object with OmicVerse",
+    "Convert the OmicVerse annotation notebook into a reusable local skill"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "annotate",
+    "single-cell",
+    "anndata",
+    "notebooks",
+    "triggerable"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "celltypist",
+    "gpt4celltype",
+    "scsa",
+    "query_reference",
+    "gptcelltype",
+    "pySCSA",
+    "celltypist_prediction",
+    "gpt4celltype_prediction",
+    "scsa_prediction",
+    "source-grounding.md",
+    "source-notebook-map.md",
+    "validation"
+  ],
+  "required_paths": [
+    "references/backend-selection.md",
+    "references/source-notebook-map.md",
+    "references/source-grounding.md",
+    "references/compatibility.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "import_only",
+    "max_wall_seconds": 120,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "synthetic-annotation-smoke",
+      "tier": "import",
+      "conda_env": "omictest",
+      "env": {
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} - <<'PY'\nfrom __future__ import annotations\n\nimport inspect\nimport json\nimport os\n\nimport anndata as ad\nimport numpy as np\nimport pandas as pd\n\nfrom omicverse.single._annotation import Annotation\nfrom omicverse.single._gptcelltype import gptcelltype\nfrom omicverse.single._anno import pySCSA\n\nos.environ[\"AGI_API_KEY\"] = \"\"\n\nadata = ad.AnnData(X=np.array([[1.0, 2.0], [3.0, 4.0]], dtype=float))\nadata.obs[\"leiden\"] = pd.Categorical([\"0\", \"1\"])\n\nanno = Annotation(adata)\nprompt = gptcelltype(\n    {\"0\": [\"MS4A1\", \"CD79A\"], \"1\": [\"NKG7\", \"PRF1\"]},\n    tissuename=\"PBMC\",\n    speciename=\"human\",\n    provider=\"openai\",\n    model=\"gpt-5-mini\",\n)\nscsa = pySCSA(adata, model_path=\"temp/pySCSA_2024_v1_plus.db\")\n\nsummary = {\n    \"annotation_sig\": str(inspect.signature(Annotation.annotate)),\n    \"query_sig\": str(inspect.signature(Annotation.query_reference)),\n    \"gpt_sig\": str(inspect.signature(gptcelltype)),\n    \"scsa_sig\": str(inspect.signature(pySCSA)),\n    \"annotation_init\": hasattr(anno, \"adata\"),\n    \"prompt_is_str\": isinstance(prompt, str),\n    \"prompt_mentions_pbmc\": \"PBMC\" in prompt,\n    \"prompt_mentions_human\": \"human\" in prompt.lower(),\n    \"scsa_has_cell_anno\": hasattr(scsa, \"cell_anno\"),\n}\n\nprint(json.dumps(summary, sort_keys=True))\nPY",
+      "timeout_seconds": 120,
+      "expect_stdout_contains": [
+        "\"annotation_init\": true",
+        "\"prompt_is_str\": true",
+        "\"prompt_mentions_pbmc\": true",
+        "\"prompt_mentions_human\": true",
+        "\"scsa_has_cell_anno\": true",
+        "method='celltypist'",
+        "source='cellxgene'",
+        "provider='qwen'",
+        "target: str = 'cellmarker'"
+      ]
+    }
+  ]
+}

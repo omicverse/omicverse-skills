@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "skill": "omicverse-cross-modal-celltype-transfer",
+  "sample_requests": [
+    "Convert the OmicVerse cross-modal annotation notebook into a reusable skill",
+    "Transfer cell labels from a reference AnnData to a query AnnData with OmicVerse weighted KNN"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "reference",
+    "query",
+    "transfer",
+    "anndata",
+    "notebooks",
+    "weighted_knn"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "weighted_knn_trainer",
+    "weighted_knn_transfer",
+    "mode='package'",
+    "pred_unknown",
+    "transf_celltype",
+    "transf_celltype_unc",
+    "X_glue",
+    "embedding",
+    "mde",
+    "pymde",
+    "source-notebook-map.md",
+    "source-grounding.md",
+    "compatibility"
+  ],
+  "required_paths": [
+    "references/integration-method-selection.md",
+    "references/source-notebook-map.md",
+    "references/source-grounding.md",
+    "references/compatibility.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 180,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "synthetic-cross-modal-transfer",
+      "tier": "full",
+      "conda_env": "omictest",
+      "env": {
+        "PYTHONPATH": "../omicverse",
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} - <<'PY'\nfrom __future__ import annotations\n\nimport json\nimport os\nimport numpy as np\nimport pandas as pd\nimport anndata as ad\nimport matplotlib\nmatplotlib.use('Agg')\n\nos.environ.setdefault('MPLCONFIGDIR', '/tmp/mpl')\nos.environ.setdefault('NUMBA_CACHE_DIR', '/tmp/numba')\n\nimport omicverse as ov\n\nrng = np.random.default_rng(7)\nngenes = 40\nn_ref = 36\nn_query = 24\ndims = 6\ngenes = [f'G{i}' for i in range(ngenes)]\ncenters = np.array([\n    [-4.0, -1.0, 0.5, 0.0, 1.0, -0.5],\n    [0.0, 4.0, -1.0, 1.5, -0.5, 0.25],\n    [3.5, -2.5, 1.5, -1.0, 0.25, 2.0],\n])\nlabels = ['T cell', 'B cell', 'Mono']\nref_blocks = []\nquery_blocks = []\nref_label_values = []\nfor idx, center in enumerate(centers):\n    ref_blocks.append(center + 0.25 * rng.normal(size=(n_ref // 3, dims)))\n    query_blocks.append(center + 0.25 * rng.normal(size=(n_query // 3, dims)))\n    ref_label_values.extend([labels[idx]] * (n_ref // 3))\nref_emb = np.vstack(ref_blocks)\nquery_emb = np.vstack(query_blocks)\nref = ad.AnnData(X=rng.poisson(5, (n_ref, ngenes)).astype(float))\nquery = ad.AnnData(X=rng.poisson(5, (n_query, ngenes)).astype(float))\nref.var_names = genes\nquery.var_names = genes\nref.obs_names = [f'r{i}' for i in range(n_ref)]\nquery.obs_names = [f'q{i}' for i in range(n_query)]\nref.obs['major_celltype'] = pd.Categorical(ref_label_values)\nref.obsm['X_glue'] = ref_emb\nquery.obsm['X_glue'] = query_emb\n\nknn = ov.utils.weighted_knn_trainer(train_adata=ref, train_adata_emb='X_glue', n_neighbors=5)\nlabels_df, uncert_df = ov.utils.weighted_knn_transfer(\n    query_adata=query,\n    query_adata_emb='X_glue',\n    ref_adata_obs=ref.obs,\n    label_keys='major_celltype',\n    knn_model=knn,\n    mode='package',\n)\nquery.obs['transf_celltype'] = labels_df.loc[query.obs.index, 'major_celltype']\nquery.obs['transf_celltype_unc'] = uncert_df.loc[query.obs.index, 'major_celltype']\ncat_plot = ov.utils.embedding(query, basis='X_glue', color='transf_celltype', palette=ov.palette()[11:], show=False)\nsummary = {\n    'labels_shape': list(labels_df.shape),\n    'uncert_shape': list(uncert_df.shape),\n    'label_cols': list(labels_df.columns),\n    'uncert_cols': list(uncert_df.columns),\n    'transf_celltype': 'transf_celltype' in query.obs,\n    'transf_celltype_unc': 'transf_celltype_unc' in query.obs,\n    'cat_plot_ok': cat_plot is not None,\n    'pred_unique_count': int(query.obs['transf_celltype'].astype(str).nunique()),\n}\nprint(json.dumps(summary, sort_keys=True))\nPY",
+      "timeout_seconds": 180,
+      "expect_stdout_contains": [
+        "\"labels_shape\": [24, 1]",
+        "\"uncert_shape\": [24, 1]",
+        "\"label_cols\": [\"major_celltype\"]",
+        "\"uncert_cols\": [\"major_celltype\"]",
+        "\"transf_celltype\": true",
+        "\"transf_celltype_unc\": true",
+        "\"cat_plot_ok\": true"
+      ]
+    }
+  ]
+}

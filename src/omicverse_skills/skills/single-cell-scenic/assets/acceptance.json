@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-scenic",
+  "sample_requests": [
+    "Convert the OmicVerse SCENIC notebook into a reusable skill",
+    "Run SCENIC regulon analysis on single-cell AnnData with OmicVerse",
+    "Choose between RegDiffusion, GRNBoost2, and GENIE3 for OmicVerse SCENIC"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "scenic",
+    "single-cell",
+    "anndata",
+    "triggerable",
+    "regdiffusion",
+    "grnboost2",
+    "genie3"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.single.SCENIC",
+    "SCENIC.cal_grn",
+    "SCENIC.cal_regulons",
+    "regdiffusion",
+    "grnboost2",
+    "genie3",
+    "rho_mask_dropouts",
+    "top_n_targets",
+    "top_n_regulators",
+    "regulon_specificity_scores",
+    "binarize",
+    "plot_rss",
+    "rank_genes_groups",
+    "ov.single.cosg",
+    "build_correlation_network_umap_layout",
+    "add_tf_regulation",
+    "plot_grn"
+  ],
+  "required_paths": [
+    "references/branch-selection.md",
+    "references/source-notebook-map.md",
+    "references/source-grounding.md",
+    "references/compatibility.md",
+    "scripts/scenic_smoke.py"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 180,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "synthetic-regdiffusion-smoke",
+      "tier": "full",
+      "conda_env": "omicverse",
+      "env": {
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba",
+        "SCENIC_DB_GLOB": "/scratch/users/steorra/data/scenic/databases/mm10/*feather",
+        "SCENIC_MOTIF_PATH": "/scratch/users/steorra/data/scenic/motif/mm10/motifs-v10nr_clust-nr.mgi-m0.001-o0.0.tbl"
+      },
+      "command": "${PYTHON} examples/omicverse-single-skills/omicverse-single-cell-scenic/scripts/scenic_smoke.py",
+      "timeout_seconds": 180,
+      "expect_stdout_contains": [
+        "\"db_glob_set\": true",
+        "\"motif_path_set\": true",
+        "\"method\": \"regdiffusion\"",
+        "\"layer\": \"counts\"",
+        "\"columns_ok\": true",
+        "\"adjacency_synced\": true"
+      ]
+    },
+    {
+      "name": "cal-grn-interface-smoke",
+      "tier": "import",
+      "conda_env": "omicverse",
+      "command": "${PYTHON} scripts/inspect_python_interface.py omicverse.single._scenic:SCENIC.cal_grn --pretty",
+      "timeout_seconds": 90,
+      "expect_stdout_contains": [
+        "\"method\"",
+        "\"regdiffusion\"",
+        "\"grnboost2\"",
+        "\"genie3\"",
+        "\"source_available\": true"
+      ]
+    },
+    {
+      "name": "cal-regulons-interface-smoke",
+      "tier": "import",
+      "conda_env": "omicverse",
+      "command": "${PYTHON} scripts/inspect_python_interface.py omicverse.single._scenic:SCENIC.cal_regulons --pretty",
+      "timeout_seconds": 90,
+      "expect_stdout_contains": [
+        "\"rho_mask_dropouts\"",
+        "\"seed\"",
+        "\"source_available\": true"
+      ]
+    }
+  ]
+}

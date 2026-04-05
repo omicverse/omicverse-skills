@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-cytotrace2",
+  "sample_requests": [
+    "Convert the OmicVerse CytoTRACE2 notebook into a reusable skill",
+    "Predict developmental potency on single-cell AnnData with OmicVerse CytoTRACE2",
+    "Choose preprocessing mode and species settings for OmicVerse CytoTRACE2"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "cytotrace2",
+    "single-cell",
+    "anndata",
+    "preprocessing",
+    "species",
+    "parallelization"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.pp.preprocess",
+    "mode='shiftlog|pearson'",
+    "ov.single.cytotrace2",
+    "species='mouse'",
+    "disable_parallelization",
+    "max_cores",
+    "CytoTRACE2_Score",
+    "CytoTRACE2_Potency",
+    "CytoTRACE2_Relative",
+    "preKNN_CytoTRACE2_Score",
+    "preKNN_CytoTRACE2_Potency",
+    "ov.utils.embedding"
+  ],
+  "required_paths": [
+    "references/branch-selection.md",
+    "references/source-grounding.md",
+    "references/source-notebook-map.md",
+    "references/compatibility.md",
+    "scripts/cytotrace2_smoke.py"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 180,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "cytotrace2-local-smoke",
+      "tier": "full",
+      "conda_env": "omicverse",
+      "env": {
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} examples/omicverse-single-skills/omicverse-single-cell-cytotrace2/scripts/cytotrace2_smoke.py",
+      "timeout_seconds": 180,
+      "expect_stdout_contains": [
+        "\"columns_ok\": true",
+        "\"mode\": \"shiftlog|pearson\"",
+        "\"obs_keys_ok\": true",
+        "\"result_file\": true",
+        "\"rows\": 120",
+        "\"species\": \"mouse\""
+      ]
+    },
+    {
+      "name": "cytotrace2-interface-smoke",
+      "tier": "import",
+      "conda_env": "omicverse",
+      "command": "${PYTHON} scripts/inspect_python_interface.py omicverse.single.cytotrace2 --pretty",
+      "timeout_seconds": 90,
+      "expect_stdout_contains": [
+        "\"species\"",
+        "\"batch_size\"",
+        "\"smooth_batch_size\"",
+        "\"disable_parallelization\"",
+        "\"source_available\": true"
+      ]
+    },
+    {
+      "name": "preprocess-interface-smoke",
+      "tier": "import",
+      "conda_env": "omicverse",
+      "command": "${PYTHON} scripts/inspect_python_interface.py omicverse.pp.preprocess --pretty",
+      "timeout_seconds": 90,
+      "expect_stdout_contains": [
+        "\"mode\"",
+        "\"organism\"",
+        "\"identify_robust\"",
+        "\"source_available\": true"
+      ]
+    }
+  ]
+}

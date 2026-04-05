@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-rna-velocity",
+  "sample_requests": [
+    "Convert the OmicVerse velocity notebook into a reusable skill",
+    "Analyze a velocity-ready AnnData with OmicVerse RNA velocity",
+    "Compare scvelo, dynamo, latentvelo, and graphvelo branches"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "velocity",
+    "single-cell",
+    "anndata",
+    "triggerable",
+    "latentvelo",
+    "graphvelo"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## GraphVelo Refinement",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.single.Velo",
+    "filter_genes",
+    "preprocess",
+    "moments",
+    "dynamics",
+    "cal_velocity",
+    "velocity_graph",
+    "velocity_embedding",
+    "Velo.graphvelo",
+    "ov.pp.neighbors",
+    "ov.pp.umap",
+    "ov.pp.leiden",
+    "recipe='monocle'",
+    "backend='scvelo'",
+    "method='scvelo'",
+    "method='dynamo'",
+    "method='latentvelo'",
+    "method='graphvelo'",
+    "backend='dynamo'",
+    "ov.settings.mode",
+    "velocity_S_graph",
+    "velocity_S_umap",
+    "velocity_gv",
+    "velocity_gv_graph",
+    "velocity_gv_umap",
+    "gv_X_umap",
+    "gv_X_pca",
+    "source-notebook-map.md",
+    "source-grounding.md",
+    "compatibility"
+  ],
+  "required_paths": [
+    "references/branch-selection.md",
+    "references/source-notebook-map.md",
+    "references/source-grounding.md",
+    "references/compatibility.md",
+    "scripts/graphvelo_smoke.py"
+  ],
+  "validation_budget": {
+    "smoke_mode": "full",
+    "max_wall_seconds": 240,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "synthetic-graphvelo-smoke",
+      "tier": "full",
+      "conda_env": "omictest",
+      "env": {
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} /Users/fernandozeng/Desktop/analysis/omicverse-project/awesome-skill-generate/examples/omicverse-single-skills/omicverse-single-cell-rna-velocity/scripts/graphvelo_smoke.py",
+      "timeout_seconds": 240,
+      "expect_stdout_contains": [
+        "\"x_pca\": true",
+        "\"x_umap\": true",
+        "\"velocity_s\": true",
+        "\"velocity_s_graph\": true",
+        "\"velocity_s_umap\": true",
+        "\"velocity_gv\": true",
+        "\"velocity_gv_genes\": true",
+        "\"velocity_gv_graph\": true",
+        "\"velocity_gv_umap\": true",
+        "\"gv_x_umap\": true",
+        "\"gv_x_pca\": true",
+        "\"streamplot_ok\": true"
+      ]
+    },
+    {
+      "name": "graphvelo-interface-smoke",
+      "tier": "import",
+      "conda_env": "omictest",
+      "command": "${PYTHON} /Users/fernandozeng/Desktop/analysis/omicverse-project/awesome-skill-generate/scripts/inspect_python_interface.py omicverse.single._velo:Velo.graphvelo --pretty",
+      "timeout_seconds": 90,
+      "expect_stdout_contains": [
+        "Refine velocity vectors with GraphVelo",
+        "\"source_available\": true",
+        "\"basis_keys\"",
+        "\"gene_subset\""
+      ]
+    },
+    {
+      "name": "cal-velocity-interface-smoke",
+      "tier": "import",
+      "conda_env": "omictest",
+      "command": "${PYTHON} /Users/fernandozeng/Desktop/analysis/omicverse-project/awesome-skill-generate/scripts/inspect_python_interface.py omicverse.single._velo:Velo.cal_velocity --pretty",
+      "timeout_seconds": 90,
+      "expect_stdout_contains": [
+        "dynamo",
+        "scvelo",
+        "latentvelo",
+        "graphvelo",
+        "\"source_available\": true"
+      ]
+    },
+    {
+      "name": "umap-interface-smoke",
+      "tier": "import",
+      "conda_env": "omictest",
+      "command": "${PYTHON} /Users/fernandozeng/Desktop/analysis/omicverse-project/awesome-skill-generate/scripts/inspect_python_interface.py omicverse.pp._umap:umap --pretty",
+      "timeout_seconds": 90,
+      "expect_stdout_contains": [
+        "\"umap\"",
+        "\"torchdr\"",
+        "\"mde\"",
+        "\"pumap\"",
+        "\"rapids\"",
+        "\"source_available\": true"
+      ]
+    }
+  ]
+}

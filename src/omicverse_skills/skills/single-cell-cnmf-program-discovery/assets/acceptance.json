@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-cnmf-program-discovery",
+  "sample_requests": [
+    "Convert this OmicVerse cNMF notebook section into a reusable skill",
+    "Run OmicVerse cNMF gene-program discovery on a single-cell AnnData object"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "cnmf",
+    "anndata",
+    "program",
+    "gpu",
+    "triggerable"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Stage Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "factorize",
+    "combine",
+    "consensus",
+    "load_results",
+    "get_results",
+    "get_results_rfc",
+    "use_gpu",
+    "worker",
+    "cNMF_cluster"
+  ],
+  "required_paths": [
+    "references/branch-selection.md",
+    "references/compatibility.md",
+    "references/source-grounding.md",
+    "references/source-notebook-map.md",
+    "scripts/cnmf_smoke.py"
+  ],
+  "validation_budget": {
+    "smoke_mode": "import_only",
+    "max_wall_seconds": 240,
+    "skip_reason": ""
+  },
+  "smoke_commands": [
+    {
+      "name": "cnmf-constructor-smoke",
+      "tier": "import",
+      "conda_env": "omicverse",
+      "env": {
+        "MPLCONFIGDIR": "/tmp/mpl",
+        "NUMBA_CACHE_DIR": "/tmp/numba"
+      },
+      "command": "${PYTHON} examples/omicverse-single-skills/omicverse-single-cell-cnmf-program-discovery/scripts/cnmf_smoke.py",
+      "timeout_seconds": 240,
+      "expect_stdout_contains": [
+        "\"constructed\": true",
+        "\"use_gpu\": false",
+        "\"name\": \"toy\""
+      ]
+    }
+  ]
+}
