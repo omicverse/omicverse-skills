@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "omicverse-skills"
-version = "0.2.0"
+version = "0.3.0"
 description = "Standalone OmicVerse skills catalog"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -37,4 +37,12 @@ where = ["src"]
 include = ["omicverse_skills*"]
 
 [tool.setuptools.package-data]
-omicverse_skills = ["skills/*/*.md", "skills/*/*/*.md"]
+omicverse_skills = [
+  "skills/*/*.md",
+  "skills/*/*/*.md",
+  "skills/*/assets/*.json",
+  "notebook_index.json",
+]
+
+[project.scripts]
+omicverse-skills-index = "omicverse_skills.notebook_index:_cli"
