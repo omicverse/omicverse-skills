@@ -51,6 +51,20 @@ It covers how to configure OmicVerse's plotting style, choose colors from the Fo
      - `ov.pl.embedding_density` for density overlays, controlling smoothness with `adjust`.
    - For spatial gene density, describe the workflow: `ov.pl.calculate_gene_density(adata, genes=[...], basis='spatial')`, then overlay with `ov.pl.embedding(..., layer='gene_density', cmap='...')`.
    - Cover additional charts like `ov.pl.single_group_boxplot`, `ov.pl.bardotplot`, `ov.pl.dotplot`, and `ov.pl.marker_heatmap`, emphasizing input formats (long-form DataFrame vs. AnnData with `.obs` annotations) and optional helpers such as `ov.pl.add_palue` for manual p-value annotations.
+   - **Circular plot1cell view (`ov.pl.plot1cell`)**: a Wu 2021 plot1cell-style circular UMAP with concentric metadata tracks. Clusters become arc sectors on the circumference (sector length ∝ `log10(n_cells)`); the embedding is drawn inside the unit circle with a Gaussian-KDE contour overlay; each entry in `tracks` becomes one extra ring coloured by the run-length segments of that metadata column within each cluster sector. Single call:
+     ```python
+     ov.pl.plot1cell(
+         adata, clusters='cell_type', basis='X_umap',
+         tracks=['compartment', 'tissue', 'sex', 'age'],
+         point_size=2, point_alpha=0.35,
+         figsize=(10, 10), label_fontsize=7,
+     )
+     ```
+     - **Scale `point_size` / `point_alpha` to cohort size**: ~10k cells `point_size=6, alpha=0.5`; 50k `2, 0.35`; 100k `1, 0.25`; 200k+ `0.8, 0.2`.
+     - **`tracks` order matters**: each track becomes a concentric ring; the first listed sits closest to the centre. Put the most-relevant metadata first.
+     - **`basis`**: pass any 2-D embedding key (`X_umap`, `X_tSNE`, `X_umap_Harmony_scDonor_snBatch`, etc.) — the function accepts arbitrary obsm keys.
+     - **Memory tip**: plot1cell only needs `obsm[basis]` + `obs[clusters]` + `obs[tracks]`; for 200k+ cohorts, slice `adata = adata[:, :200].copy()` to a few hundred genes before plotting (the gene matrix is irrelevant to this view).
+     - **Custom palettes**: pass `cluster_palette` (cluster-arc colours) and/or `track_palettes` (list of per-track palettes) to override defaults.
 5. **Finishing touches and exports**
    - Encourage adding titles, axis labels, and `fig.tight_layout()` to prevent clipping.
    - Suggest saving figures with `fig.savefig('plot.png', dpi=300, bbox_inches='tight')` and documenting color mappings for reproducibility.
@@ -64,9 +78,11 @@ It covers how to configure OmicVerse's plotting style, choose colors from the Fo
 - "Plot a three-set Venn diagram of overlapping DEG lists and reuse Forbidden City colors for consistency."
 - "Load the dentate gyrus AnnData, color clusters with `fb.get_color` selections, and render an embedding with adjusted legend placement."
 - "Generate single-cell proportion bar/area plots plus gene-density overlays using OmicVerse helper functions."
+- "Build a `plot1cell` circular view of a 100k-cell cohort with disease / tissue / assay / sex tracks and `point_size=1, point_alpha=0.25`."
 
 ## References
 - Bulk tutorial: [`t_visualize_bulk.ipynb`](https://omicverse.readthedocs.io/en/latest/Tutorials-plotting/t_visualize_bulk/)
 - Color system tutorial: [`t_visualize_colorsystem.ipynb`](https://omicverse.readthedocs.io/en/latest/Tutorials-plotting/t_visualize_colorsystem/)
 - Single-cell tutorial: [`t_visualize_single.ipynb`](https://omicverse.readthedocs.io/en/latest/Tutorials-plotting/t_visualize_single/)
+- plot1cell circular view: [`t_plot1cell.ipynb`](https://omicverse.readthedocs.io/en/latest/Tutorials-plotting/t_plot1cell/)
 - Quick reference snippets: [`reference.md`](reference.md)
