@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "skill": "omicverse-bulk-metabol-pathway-multifactor",
+  "sample_requests": [
+    "Run MSEA ORA at padj<0.20 on the cachexia DEG, plot a pathway dot plot, cross-validate with GSEA on the same DEG ranking",
+    "Treatment x time crossed design: run ASCA with 500 permutations and plot the variance partition",
+    "Repeated-measures study: per-feature MixedLM with formula='treatment + time', groups='patient', report the treatment[T.drug] coefficient",
+    "Two-group time-series MEBA on a planted-interaction synthetic dataset",
+    "Detect metabolite pairs whose Spearman correlation rewires between cachexic and control with DGCA + dgca_class_bar",
+    "Build per-condition correlation networks at |r|>=0.5, padj<0.05 and compare shared / specific edges",
+    "Joint MOFA+ on metabolomics + RNA-seq with 5 factors, scale_views=True, save the model to mofa.hdf5",
+    "Reproduce the MTBLS1 worked example end-to-end: ingest, sample-QC, CV-filter, full preprocessing, multivariate, MSEA, ASCA, biomarker panel, DGCA, correlation network"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "metabolomics",
+    "MSEA",
+    "ASCA",
+    "MEBA",
+    "DGCA",
+    "MOFA",
+    "MTBLS1",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.metabol.msea_ora",
+    "ov.metabol.msea_gsea",
+    "ov.metabol.map_ids",
+    "ov.metabol.pathway_bar",
+    "ov.metabol.pathway_dot",
+    "ov.metabol.asca",
+    "ov.metabol.mixed_model",
+    "ov.metabol.meba",
+    "ASCAResult",
+    "ov.metabol.dgca",
+    "ov.metabol.corr_network",
+    "ov.metabol.corr_network_plot",
+    "ov.metabol.dgca_class_bar",
+    "ov.metabol.run_mofa",
+    "ov.utils.load_metabolights"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/metabol/{_msea,_multifactor,_correlation,_integration,_id_mapping,plotting}.py plus omicverse/utils/load_metabolights. No live smoke harness; the synthetic-MEBA-recovery and TCA-pathway-recovery checks documented in the source notebooks serve as in-skill acceptance probes."
+  },
+  "smoke_commands": []
+}

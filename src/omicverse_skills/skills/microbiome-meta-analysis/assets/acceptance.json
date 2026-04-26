@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "skill": "omicverse-microbiome-meta-analysis",
+  "sample_requests": [
+    "Combine three cohorts at the genus level with combine_studies and report the obs['study'] breakdown",
+    "Run a random-effects DESeq2 meta-analysis across 3 cohorts and report top-12 features with 95% CI and Cochran's I2",
+    "Compare wilcoxon / deseq2 / ancombc at the meta level - which method recovers planted features first",
+    "Diagnose whether a 'significant' meta-hit at FDR 0.05 has acceptable cross-cohort agreement (low I2)",
+    "Run a fixed-effects meta-analysis and explain when it is appropriate vs random-effects",
+    "Generate a diagnostic combined-PCoA to spot whether study effect dominates the disease effect"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "microbiome",
+    "meta-analysis",
+    "combine_studies",
+    "meta_da",
+    "random-effects",
+    "I2",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.micro.combine_studies",
+    "ov.micro.meta_da",
+    "method='deseq2'",
+    "method='wilcoxon'",
+    "method='ancombc'",
+    "combine='random_effects'",
+    "combine='fixed_effects'",
+    "combined_lfc",
+    "combined_se",
+    "n_studies",
+    "I2",
+    "fdr_bh",
+    "rank='genus'"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/micro/_meta.py. Synthetic 3-cohort demo with planted features serves as the future smoke target; no live smoke run executed."
+  },
+  "smoke_commands": []
+}

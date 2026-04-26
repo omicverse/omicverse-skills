@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "skill": "omicverse-micro-metabol-paired",
+  "sample_requests": [
+    "Load Franzosa 2019 IBD paired data, filter to top 150 microbes and top 200 annotated metabolites, run Spearman + CCA + MMvec, list top-10 pairs from each",
+    "Validate MMvec on synthetic paired data with 5 planted producer-pairs and confirm planted pairs rank above random",
+    "Plot the joint microbe + metabolite embedding biplot from a fitted MMvec at latent components (0, 1)",
+    "For a chosen microbe return the conditional probability over metabolites with mmvec.conditional_probabilities()",
+    "Decide between Spearman, CCA, and MMvec given a 165-sample paired cohort"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "microbiome",
+    "metabolomics",
+    "paired",
+    "Spearman",
+    "CCA",
+    "MMvec",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.micro.fetch_franzosa_ibd_2019",
+    "ov.micro.simulate_paired",
+    "ov.micro.paired_spearman",
+    "ov.micro.paired_cca",
+    "ov.micro.MMvec",
+    "n_latent",
+    "val_frac",
+    "patience",
+    "best_epoch_",
+    ".cooccurrence()",
+    ".conditional_probabilities()",
+    ".top_pairs",
+    "ov.micro.plot_mmvec_training",
+    "ov.micro.plot_cca_scatter",
+    "ov.micro.plot_cooccurrence",
+    "ov.micro.plot_embedding_biplot",
+    "ov.micro.plot_paired_method_comparison"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/micro/_pair.py. Franzosa 2019 ingest + MMvec training (~5 min on CPU) is the canonical smoke target; simulate_paired + MMvec + Spearman is a second-tier acceptance probe. No live smoke run executed."
+  },
+  "smoke_commands": []
+}

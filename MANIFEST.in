@@ -1,7 +1,9 @@
 include README.md
 include LICENSE
 include pyproject.toml
+include src/omicverse_skills/notebook_index.json
 recursive-include src/omicverse_skills/skills *.md
+recursive-include src/omicverse_skills/skills *.json
 global-exclude .DS_Store
 global-exclude *.py[cod]
 global-exclude __pycache__

@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "skill": "omicverse-bulk-metabol-multivariate",
+  "sample_requests": [
+    "Run PLS-DA and OPLS-DA on the Pareto-scaled cachexia data and compare R2Y / Q2",
+    "Show the top-15 VIP metabolites with sign-coloured bars and an OPLS-DA S-plot",
+    "Build a 10-metabolite logistic-regression biomarker panel with 5x3 nested CV and a 100-iteration permutation null",
+    "Get per-feature AUC with 500-iteration bootstrap CIs for cachexic vs control",
+    "Plot the held-out ROC from biomarker_panel.outer_predictions / outer_labels",
+    "Decide between classifier='lr' / 'rf' / 'svm' for a small metabolomics cohort"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "metabolomics",
+    "PLS-DA",
+    "OPLS-DA",
+    "VIP",
+    "ROC",
+    "biomarker",
+    "nested CV"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.metabol.plsda",
+    "ov.metabol.opls_da",
+    "n_ortho=1",
+    "scale=False",
+    "to_vip_table",
+    "ov.metabol.vip_bar",
+    "ov.metabol.s_plot",
+    "ov.metabol.roc_feature",
+    "n_bootstrap",
+    "ov.metabol.biomarker_panel",
+    "cv_outer",
+    "cv_inner",
+    "n_permutations",
+    "PLSDAResult",
+    "BiomarkerPanelResult",
+    "permutation_pvalue",
+    "outer_predictions"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/metabol/{_plsda,_biomarker,plotting}.py; no live smoke harness."
+  },
+  "smoke_commands": []
+}

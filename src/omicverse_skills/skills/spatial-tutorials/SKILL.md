@@ -69,6 +69,73 @@ ov.space.salvage_secondary_labels(adata, primary_label='labels_he_expanded',
 cdata = ov.space.bin2cell(adata, labels_key='labels_joint')
 ```
 
+### Xenium Preprocessing
+
+10x Genomics Xenium output (cell × gene matrices with polygon segmentation already done by the instrument). Read with `ov.io.read_xenium`; cache the parsed AnnData on disk for fast reuse:
+
+```python
+import omicverse as ov
+ov.style(font_path='Arial')
+ov.settings.cpu_gpu_mixed_init()        # optional: enable mixed CPU/GPU acceleration
+
+# Load — set load_image=False to skip morphology image when not needed
+adata = ov.io.read_xenium('data/xenium_breast_rep1', load_image=False)
+
+# Cache for fast re-load (cold parse → write cache; warm reads are 10–50x faster)
+adata = ov.io.read_xenium(
+    'data/xenium_breast_rep1',
+    cache_file='data/xenium_breast_rep1_cache.h5ad',
+)
+
+# Standard scanpy preprocessing
+ov.pp.normalize_total(adata, target_sum=1e4)
+ov.pp.log1p(adata)
+ov.pp.scale(adata)
+ov.pp.pca(adata, layer='scaled', n_pcs=50)
+ov.pp.neighbors(adata, n_neighbors=15, use_rep='scaled|original|X_pca', n_pcs=50)
+ov.pp.leiden(adata, resolution=0.5)
+
+# Spatial visualisation — Xenium coordinates have inverted y; remember to invert axis
+ov.pl.embedding(adata, basis='spatial', color='leiden',
+                palette=ov.pl.palette_112, legend_fontsize=8)
+```
+
+For cell-segmentation overlay (polygon-aware figures with optional H&E / DAPI background), use `ov.pl.spatialseg`:
+
+```python
+library_id = list(adata.uns['spatial'].keys())[0]
+
+ov.pl.spatialseg(
+    adata, color='leiden',
+    library_id=library_id,
+    edges_color='white', edges_width=0.3,
+    alpha=1.0, legend_fontsize=8,
+    palette=ov.pl.palette_112,
+    crop_coord=(2000, 3200, 2500, 3700),    # x0, x1, y0, y1 in spatial coords
+    figsize=(7, 6),
+)
+
+# With morphology image overlay (DAPI / H&E behind cells)
+adata_img = ov.io.read_xenium('data/xenium_breast_rep1', load_image=True)
+# Re-attach the same processed obs / obsm before plotting
+ov.pl.spatialseg(
+    adata_img, color='KRT7',
+    library_id=library_id,
+    edges_color='white', edges_width=0.4,
+    alpha=0.65, alpha_img=1.0,        # 0.45–0.65 keeps morphology visible
+    cmap=ov.pl.create_custom_colormap('#a51616'), vmax=10,
+    seg_contourpx=1.5,                # dashed cell-outline contour
+    crop_coord=(2000, 3200, 2500, 3700),
+    figsize=(7, 6),
+)
+```
+
+Xenium-specific gotchas:
+- **`vmax='p99.2'`** on `ov.pl.embedding` clips the long-tailed expression distribution that's typical of Xenium probes; without it a few hot cells dominate the colour scale.
+- **`alpha=0.45–0.65`** on `spatialseg` plots when `alpha_img=1.0` keeps DAPI morphology readable through cluster fills. Higher alpha hides the background.
+- **Spatial axis**: Xenium spatial coordinates use image-pixel convention (y increases downward); call `ax.invert_yaxis()` on `ov.pl.embedding` to match the morphology image orientation.
+- Cache the parsed AnnData with `cache_file=` — the cold parse of a 100k-cell Xenium run is 10–60 s; warm reads are sub-second.
+
 ## Stage 2: Deconvolution
 
 ### Critical API Reference: Method Selection
@@ -90,6 +157,56 @@ cell2_obj.save_model('result/c2l/model')
 ```
 
 Note: For cell2location, the `method` parameter is set at initialization, not at the `deconvolution()` call. For Tangram, it's passed to `deconvolution()`.
+
+### FlashDeconv — Atlas-Scale Sketching-Based Deconvolution
+
+For Visium HD / Slide-seq / Stereo-seq (10⁵–10⁶ spots) where Tangram and cell2location become impractical, use `method='FlashDeconv'`. It runs on CPU, finishes in minutes for 10k spots vs. 60+ for cell2location, and ships built-in spatial regularisation:
+
+```python
+decov_obj = ov.space.Deconvolution(
+    adata_sc=sc_adata,
+    adata_sp=sp_adata,
+    celltype_key='Subset',
+    result_dir='result/flashdeconv',
+    method='FlashDeconv',                 # set at INIT time, like cell2location
+)
+decov_obj.preprocess_sc(max_cells=5000)
+decov_obj.preprocess_sp()
+decov_obj.deconvolution(
+    sketch_dim=512,           # randomized-sketch dimension; raise to 1024 for HD-2µm
+    lambda_spatial=5000,      # spatial smoothness; raise to 10000 for sparse / noisy data
+    n_hvg=2000,               # raise to 3000 when accuracy matters more than speed
+)
+
+# Results — three accessors (same payload, different wrappings):
+decov_obj.adata_cell2location               # AnnData with proportions in .X
+decov_obj.adata_sp.obsm['flashdeconv']      # DataFrame of proportions
+decov_obj.adata_sp.obs['flashdeconv_dominant']  # dominant cell type per spot
+
+# Spatial visualisation reuses the same plot stack as cell2location
+ov.pl.plot_spatial(
+    adata=decov_obj.adata_cell2location,
+    color=clust_labels, labels=clust_labels,
+    show_img=True, style='fast',
+    max_color_quantile=0.992,
+    circle_diameter=4,
+    colorbar_position='right',
+    palette=color_dict,
+)
+```
+
+When to pick FlashDeconv over the others:
+| Feature | FlashDeconv | Tangram | cell2location |
+|---|---|---|---|
+| GPU required | No | Optional | Recommended |
+| 10k spots wall-time | ~2 min | ~15 min | ~60 min |
+| Native Visium HD support | Yes | Limited | Limited |
+| Built-in spatial regularisation | Yes (`lambda_spatial`) | No | No |
+
+Parameter tuning quick reference (from the FlashDeconv tutorial):
+- Noisy / sparse data → raise `lambda_spatial` to 10000.
+- Visium HD 2 µm → raise `sketch_dim` to 1024.
+- Accuracy-critical → raise `n_hvg` to 3000.
 
 ### Starfysh Archetypal Deconvolution
 

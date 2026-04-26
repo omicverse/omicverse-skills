@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-liana-communication",
+  "sample_requests": [
+    "Run LIANA rank_aggregate on a PBMC8k cohort grouped by bulk_labels and produce a sender x receiver dot plot",
+    "Reshape the LIANA result into a CommAnnData classified against CellChat pathways and plot a role network for ECM/Adhesion",
+    "Focus the dot plot on signals originating from CD34+ at pvalue_threshold=0.05",
+    "Compare LIANA rank_aggregate vs single-method (cellphonedb / natmi / connectome) on the same cohort",
+    "Plot a multi-condition (baseline vs stimulated) ccc_heatmap"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "LIANA",
+    "ligand-receptor",
+    "CellChat",
+    "ccc_heatmap",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.single.run_liana",
+    "method='rank_aggregate'",
+    "resource_name='consensus'",
+    "ov.single.to_comm_adata",
+    "classification_reference='cellchat'",
+    "classification_fallback='family'",
+    "ov.pl.ccc_heatmap",
+    "plot_type='dot'",
+    "plot_type='tile'",
+    "plot_type='heatmap'",
+    "plot_type='focused_heatmap'",
+    "plot_type='pathway_bubble'",
+    "plot_type='role_heatmap'",
+    "plot_type='role_network'",
+    "sender_use",
+    "receiver_use",
+    "score_key='specificity_rank'"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/single/_liana.py and omicverse/pl/_ccc_heatmap.py. LIANA is an external dependency (pip install liana) whose API is documented from notebook usage. PBMC8k cohort would be the smoke target; no live smoke run executed."
+  },
+  "smoke_commands": []
+}

@@ -103,3 +103,43 @@ ov.pl.embedding(
 # export figure
 plt.savefig('omicverse_visualization.png', dpi=300, bbox_inches='tight')
 ```
+
+## `plot1cell` — circular UMAP with concentric metadata tracks
+
+```python
+# Canonical call — clusters become arc sectors, each `tracks` entry adds a ring.
+ov.pl.plot1cell(
+    adata,
+    clusters='cell_type',                  # required: obs column for arc sectors
+    basis='X_umap',                        # any 2-D obsm key (X_umap / X_tSNE / X_umap_Harmony_*)
+    tracks=['compartment', 'tissue', 'sex', 'cell_state'],
+    point_size=2, point_alpha=0.35,        # tune to cohort size — see table below
+    figsize=(10, 10),
+    label_fontsize=7,
+)
+```
+
+**Cohort-size tuning** — the only parameters that change with `n_cells` are marker size / alpha / figure size:
+
+| n_cells   | point_size | point_alpha | figsize     | label_fontsize |
+|-----------|-----------:|------------:|-------------|---------------:|
+| ~10k      |        6   |      0.5    | (9, 9)      |       7        |
+| ~50k      |        2   |      0.35   | (10, 10)    |       7        |
+| ~100k     |        1   |      0.25   | (11, 11)    |       6        |
+| 200k+     |        0.8 |      0.2    | (12, 12)    |       8        |
+
+**Memory tip for 200k+ cohorts**: `plot1cell` only needs `obsm[basis]` + `obs[clusters]` + `obs[tracks]`. Slice the gene matrix down before plotting:
+
+```python
+adata_slim = adata[:, :200].copy()    # any 200 genes is fine; X is unused
+ov.pl.plot1cell(adata_slim, clusters=..., basis=..., tracks=..., ...)
+```
+
+Other knobs (rarely changed):
+
+- `tracks` order matters — first listed sits closest to the centre. Put the most-relevant metadata first.
+- `cluster_palette`, `track_palette`, `track_palettes` — override default colours per-cluster / per-track / per-track-list.
+- `contour_levels=(0.2, 0.3)`, `contour_color='#ae9c76'` — Gaussian-KDE overlay tuning.
+- `coord_scale=0.8`, `gap_between_deg=2.0`, `gap_start_deg=12.0` — unit-circle geometry.
+- `return_data=True` — return the geometry dataframes instead of drawing (for custom layouts).
+

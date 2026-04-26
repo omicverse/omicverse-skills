@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "skill": "omicverse-bulk-metabol-untargeted-lipidomics",
+  "sample_requests": [
+    "Load malaria_feature_table.csv LC-MS data with feature_id_sep='__' and run mummichog on the m/z + pvalue with 1000 permutations",
+    "Annotate LC-MS peaks against KEGG via [M+H]+ adducts at 10 ppm and sanity-check mummichog by seeding TCA-cycle compounds",
+    "Parse the brca_matrix.csv lipidomics matrix, annotate every species with parse_lipid + annotate_lipids, and run LION enrichment",
+    "Aggregate a lipidomics AnnData to class-level totals with aggregate_by_class(agg='sum')",
+    "Decide between mummichog_basic and mummichog_external for a multi-DB pathway enrichment run",
+    "Run species-level differential on a lipidomics matrix and feed the padj<0.10 hits into lion_enrichment"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "metabolomics",
+    "lipidomics",
+    "LIPID MAPS",
+    "mummichog",
+    "LION",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.metabol.read_lcms",
+    "feature_id_sep",
+    "var['m_z']",
+    "ov.metabol.annotate_peaks",
+    "polarity='positive'",
+    "ppm=10.0",
+    "ov.metabol.mummichog_basic",
+    "n_perm",
+    "min_overlap",
+    "ov.metabol.mummichog_external",
+    "ov.metabol.load_pathways",
+    "ov.metabol.fetch_chebi_compounds",
+    "ov.metabol.parse_lipid",
+    "LipidIdentity",
+    "ov.metabol.annotate_lipids",
+    "ov.metabol.aggregate_by_class",
+    "ov.metabol.lion_enrichment"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/metabol/{_lipidomics,_mummichog,_fetchers,io}.py; no live smoke harness. The mummichog synthetic-TCA recovery cell from the tutorial is documented in reference.md as the closest stand-in for a smoke check."
+  },
+  "smoke_commands": []
+}

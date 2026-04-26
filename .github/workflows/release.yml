@@ -1,0 +1,127 @@
+name: Release
+
+# Triggered when you push a semver tag like v0.3.0 / v1.0.0 / v0.3.1.post1.
+# Three jobs run in sequence:
+#   1. build         — produce wheel + sdist; sanity-check with twine
+#   2. publish-pypi  — upload to PyPI via OIDC Trusted Publishers (no token)
+#   3. github-release — create a GitHub Release with the dists attached and
+#                       auto-generated changelog notes
+#
+# One-time setup before this workflow can publish:
+#   PyPI side  → https://pypi.org/manage/account/publishing/
+#                Add a "pending publisher" (or attach to existing project):
+#                  PyPI Project Name : omicverse-skills
+#                  Owner             : omicverse
+#                  Repository        : omicverse-skills
+#                  Workflow filename : release.yml
+#                  Environment name  : pypi
+#   GitHub side → Settings → Environments → New environment "pypi"
+#                 (Optional but recommended: require manual approval for
+#                  production deploys.)
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+jobs:
+
+  # ---------------------------------------------------------------------------
+  # 1. Build
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build wheel + sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build tooling
+        run: python -m pip install --upgrade build twine
+
+      - name: Verify tag matches package version
+        run: |
+          TAG="${GITHUB_REF##*/}"          # refs/tags/v0.3.0 → v0.3.0
+          TAG_VERSION="${TAG#v}"           # v0.3.0          → 0.3.0
+          PKG_VERSION=$(python -c \
+            "import tomllib, pathlib;
+             p=pathlib.Path('pyproject.toml').read_bytes();
+             print(tomllib.loads(p.decode())['project']['version'])")
+          echo "tag=$TAG_VERSION  pyproject=$PKG_VERSION"
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::tag ($TAG_VERSION) does not match pyproject.toml version ($PKG_VERSION)"
+            exit 1
+          fi
+
+      - name: Build distributions
+        run: python -m build
+
+      - name: twine check
+        run: python -m twine check dist/*
+
+      - name: Upload dist as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  # ---------------------------------------------------------------------------
+  # 2. Publish to PyPI via Trusted Publishers (OIDC)
+  # ---------------------------------------------------------------------------
+  publish-pypi:
+    name: Upload to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/omicverse-skills
+    permissions:
+      id-token: write       # required for OIDC; no PyPI token needed
+    steps:
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # No `password:` — Trusted Publishers handshakes via id-token.
+        # If you want to dry-run against TestPyPI first, set:
+        #   repository-url: https://test.pypi.org/legacy/
+
+  # ---------------------------------------------------------------------------
+  # 3. GitHub Release with the dists attached
+  # ---------------------------------------------------------------------------
+  github-release:
+    name: Create GitHub Release
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # required to create a Release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # need full history for auto-changelog
+
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: omicverse-skills ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true   # auto-summary from PRs since last tag
+          files: dist/*
+          fail_on_unmatched_files: true

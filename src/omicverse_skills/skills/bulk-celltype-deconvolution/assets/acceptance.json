@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "skill": "omicverse-bulk-celltype-deconvolution",
+  "sample_requests": [
+    "Run BayesPrism on decov_bulk_covid_bulk() with the bundled scRNA-seq reference; report 8-core fast-mode fractions and a stacked-bar plot",
+    "Re-run with Scaden on Apple Silicon (gpu='mps') and report the per-sample correlation against BayesPrism",
+    "Group-average fractions by disease (healthy vs COVID) and plot with ov.pl.plot_grouped_fractions",
+    "Pick a deconvolution method for a 30-sample CPU-only cohort with 12 cell types in the reference",
+    "Run TAPE on a custom bulk + single-cell reference pair with method='tape' and adaptive feature selection"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "bulk",
+    "deconvolution",
+    "BayesPrism",
+    "Scaden",
+    "TAPE",
+    "celltype",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.bulk.Deconvolution",
+    "adata_bulk",
+    "adata_single",
+    "celltype_key",
+    "cellstate_key",
+    "max_single_cells",
+    ".deconvolution",
+    "method='tape'",
+    "method='scaden'",
+    "method='bayesprism'",
+    "method='omicstweezer'",
+    "n_cores",
+    "fast_mode",
+    "pseudobulk_size",
+    "ov.pl.cellproportion",
+    "ov.pl.plot_grouped_fractions",
+    "ov.datasets.decov_bulk_covid_bulk",
+    "ov.datasets.decov_bulk_covid_single"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/bulk/_deconvolution.py. The COVID PBMC demo (decov_bulk_covid_bulk + decov_bulk_covid_single) is the canonical smoke target; BayesPrism multi-core CPU run takes minutes and Scaden requires GPU, so no live smoke run executed in this skill's writing pass."
+  },
+  "smoke_commands": []
+}

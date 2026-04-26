@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-cellmatch-ontology",
+  "sample_requests": [
+    "Map free-text cell labels in obs['cell_label'] to Cell Ontology terms with the default mpnet-base-v2 sentence transformer",
+    "Cohort uses heavy abbreviations like 'TIL-1' / 'TA-Early' - set up LLM expansion with tissue_context='gut' / species='mouse' and re-map",
+    "Add Cell Taxonomy enhancement for a mouse-gut cohort with threshold=0.3",
+    "List the top-10 CL matches for a single label without modifying any AnnData",
+    "Use a custom OpenAI-compatible endpoint (base_url) for LLM expansion"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "Cell Ontology",
+    "CellOntologyMapper",
+    "annotation",
+    "NLP",
+    "sentence-transformer",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.single.download_cl",
+    "ov.single.CellOntologyMapper",
+    "cl_obo_file",
+    "embeddings_path",
+    "local_model_dir",
+    ".map_adata",
+    ".map_adata_with_expansion",
+    ".map_adata_with_taxonomy",
+    ".setup_llm_expansion",
+    ".load_cell_taxonomy_resource",
+    ".find_similar_cells",
+    "tissue_context",
+    "species",
+    "threshold",
+    "api_type='custom_openai'"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/single/_cellmatch.py. LLM expansion would require an OpenAI key for a live smoke run; not executed."
+  },
+  "smoke_commands": []
+}
