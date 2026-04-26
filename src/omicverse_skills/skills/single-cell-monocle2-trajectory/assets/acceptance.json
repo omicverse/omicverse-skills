@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-monocle2-trajectory",
+  "sample_requests": [
+    "Fit Monocle2 on the Olsson WT subset, plot the DDRTree trajectory by State, run differential_gene_test on the ordering subset",
+    "Run BEAM at branch point 1 and visualise the top-4 branch-dependent genes with compare_groups=True and shared_trunk=True",
+    "Build a 40-gene dynamic_heatmap of top pseudotime-significant genes ordered by peak, GAM-fitted",
+    "Show per-gene trends for Gfi1 / Irf8 / Elane along Pseudotime with cell points coloured by State",
+    "Compare multiple marker genes on the same axis with compare_features=True"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "Monocle2",
+    "trajectory",
+    "DDRTree",
+    "BEAM",
+    "dynamic_features",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.single.Monocle",
+    ".preprocess()",
+    ".select_ordering_genes",
+    ".plot_trajectory",
+    ".differential_gene_test",
+    ".BEAM",
+    "branch_point",
+    "ov.pl.branch_streamplot",
+    "ov.pl.dynamic_heatmap",
+    "ov.single.dynamic_features",
+    "ov.pl.dynamic_trends",
+    "compare_groups",
+    "shared_trunk",
+    "use_fitted=True"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/single/_monocle*.py and omicverse/single/dynamic_features.py. Olsson WT cohort (~5k cells) serves as future smoke target; no live smoke run executed."
+  },
+  "smoke_commands": []
+}

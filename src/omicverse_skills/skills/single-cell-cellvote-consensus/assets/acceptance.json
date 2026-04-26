@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-cellvote-consensus",
+  "sample_requests": [
+    "Build a consensus label from scsa_annotation + gpt_celltype + gbi_celltype on PBMC3k via local-majority arbitration (offline)",
+    "Run online CellVote with gpt-4o-mini on a 20-cluster cohort and report the cost",
+    "Diagnose why CellVote keeps returning 'unknown' for a cluster - markers don't match candidates",
+    "Run all three annotators (cv.scsa_anno() / cv.gpt_anno() / cv.gbi_anno()) then cv.vote() for one-shot pipeline",
+    "Compare offline (local-majority) and online (LLM) consensus on the same AnnData"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "CellVote",
+    "consensus",
+    "annotation",
+    "LLM arbitration",
+    "local-majority",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.single.CellVote",
+    "cv.vote(",
+    "clusters_key",
+    "cluster_markers",
+    "celltype_keys",
+    "result_key='CellVote_celltype'",
+    "provider='openai'",
+    "provider='custom_openai'",
+    "omicverse.single._cellvote",
+    "get_cluster_celltype",
+    "scsa_anno",
+    "gpt_anno",
+    "gbi_anno",
+    "popv_anno"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/single/_cellvote.py. The offline local-majority arbitration is a deterministic test runnable in any CI env without LLM credentials; not executed here."
+  },
+  "smoke_commands": []
+}

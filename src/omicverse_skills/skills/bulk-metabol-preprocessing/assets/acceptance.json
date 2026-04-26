@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "skill": "omicverse-bulk-metabol-preprocessing",
+  "sample_requests": [
+    "Convert the OmicVerse t_metabol_01_intro notebook into a reusable preprocessing skill",
+    "Load a MetaboAnalyst CSV, impute with QRILC, PQN-normalize, log-transform, and run a Welch t-test for cachexic vs control",
+    "Apply drift_correct + SERRF + ComBat to an LC-MS run with QC pools and 3 batches",
+    "Run sample_qc on a corrected metabolomics AnnData and list outliers above the 0.95 critical Hotelling line",
+    "Choose the right impute method for left-censored LC-MS missingness vs. random NMR missingness",
+    "Use the pyMetabo chainable API to run impute → normalize → log → differential → pareto in one call"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "metabolomics",
+    "anndata",
+    "impute",
+    "normalize",
+    "transform",
+    "drift_correct",
+    "SERRF",
+    "ComBat",
+    "sample_qc"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.metabol.read_metaboanalyst",
+    "ov.metabol.read_lcms",
+    "ov.metabol.impute",
+    "method='qrilc'",
+    "ov.metabol.normalize",
+    "method='pqn'",
+    "ov.metabol.transform",
+    "method='log'",
+    "method='pareto'",
+    "ov.metabol.differential",
+    "log_transformed=True",
+    "ov.metabol.drift_correct",
+    "ov.metabol.serrf",
+    "ov.bulk.batch_correction",
+    "key_added='batch_correction'",
+    "ov.metabol.sample_qc",
+    "ov.metabol.pyMetabo"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Skill is preprocessing-only and has no live smoke harness yet; source-grounding is established by inspect.signature / inspect.getdoc / direct source reads of omicverse.metabol and omicverse.bulk.batch_correction."
+  },
+  "smoke_commands": []
+}

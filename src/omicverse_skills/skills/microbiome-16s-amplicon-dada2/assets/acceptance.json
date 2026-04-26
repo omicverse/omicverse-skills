@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "skill": "omicverse-microbiome-16s-amplicon-dada2",
+  "sample_requests": [
+    "Run the vsearch one-shot pipeline on the mothur MiSeq SOP FASTQs with filter_max_ee=1.0 and the RDP v18 SINTAX DB",
+    "Re-run the same FASTQs with backend='dada2' and filter_max_ee=2.0 and confirm diversity patterns match the vsearch result",
+    "Compute Shannon + observed-OTUs alpha at the shallowest depth, then Bray-Curtis beta + 3-D PCoA",
+    "Run Wilcoxon DA between Early and Late at phylum level with min_prevalence=0.1",
+    "Decide between Wilcoxon, pyDESeq2, and ANCOM-BC for differential abundance on a 22-sample study",
+    "Use the stepwise vsearch API to inspect intermediates (merge_pairs / filter_quality / dereplicate / unoise3 / uchime3 / sintax / usearch_global) and compose a final AnnData with build_amplicon_anndata"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "16S",
+    "amplicon",
+    "vsearch",
+    "DADA2",
+    "SINTAX",
+    "anndata",
+    "ASV"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.alignment.amplicon_16s_pipeline",
+    "backend='vsearch'",
+    "backend='dada2'",
+    "ov.alignment.fetch_rdp",
+    "ov.alignment.build_amplicon_anndata",
+    "ov.alignment.vsearch.merge_pairs",
+    "ov.alignment.vsearch.unoise3",
+    "ov.alignment.vsearch.sintax",
+    "filter_max_ee",
+    "sintax_cutoff",
+    "ov.micro.Alpha",
+    "ov.micro.Beta",
+    "ov.micro.Ordinate",
+    "ov.micro.DA",
+    "rarefy_depth",
+    "metric='braycurtis'"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/alignment/{amplicon_16s_pipeline,vsearch,dada2,build_amplicon_anndata}.py and omicverse/micro/{_diversity,_ord,_da,_pp}.py. Mothur MiSeq SOP demo would serve as the future smoke target; no live smoke run executed in this skill's writing pass."
+  },
+  "smoke_commands": []
+}

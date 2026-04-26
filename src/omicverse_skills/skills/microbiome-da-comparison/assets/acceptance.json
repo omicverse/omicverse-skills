@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "skill": "omicverse-microbiome-da-comparison",
+  "sample_requests": [
+    "Run Wilcoxon, pyDESeq2, and ANCOM-BC on Early-vs-Late at the genus level and report the 3-way Venn at FDR 0.05",
+    "Pick a single DA method for an n=12/group cohort with high zero-inflation",
+    "Build the consensus hit set (intersection across all three methods) and the Wilcoxon ∩ ANCOM-BC defensible set",
+    "Diagnose why a DESeq2 hit doesn't appear in Wilcoxon -- likely an NB-shrinkage artefact on a low-prevalence feature",
+    "Compare DA results at FDR/q < 0.05 across methods on the mothur SOP cohort and explain disagreements"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "microbiome",
+    "Wilcoxon",
+    "pyDESeq2",
+    "ANCOM-BC",
+    "differential abundance",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.micro.DA",
+    ".wilcoxon",
+    ".deseq2",
+    ".ancombc",
+    "min_prevalence",
+    "fdr_bh",
+    "q_value",
+    "ov.micro.collapse_taxa",
+    "rank='genus'"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/micro/_da.py. The mothur SOP DA-comparison demo would serve as the future smoke target; no live smoke run executed."
+  },
+  "smoke_commands": []
+}

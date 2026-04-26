@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-metatime-annotation",
+  "sample_requests": [
+    "Annotate a scVI-corrected tumor scRNA-seq AnnData with MetaTiME at over-cluster resolution 8 and plot fine and major categories on MDE",
+    "Compare MetaTiME's Major_MetaTiME rollup against manual marker-based annotation",
+    "Run MetaTiME on a 100k-cell pan-cancer cohort with resolution=10",
+    "Diagnose why MetaTiME assigned all cells to a single major category"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "MetaTiME",
+    "tumor microenvironment",
+    "MeC",
+    "annotation",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.single.MetaTiME",
+    "mode='table'",
+    ".overcluster",
+    "resolution=8",
+    ".predictTiME",
+    "save_obs_name",
+    "Major_MetaTiME",
+    "ov.utils.mde",
+    ".plot"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via inspect.signature / inspect.getdoc and direct reads of omicverse/single/_metatime.py. Bundled scVI-corrected TIL cohort is the canonical smoke target; no live smoke run executed."
+  },
+  "smoke_commands": []
+}

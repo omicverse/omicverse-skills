@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-cellrank-fate",
+  "sample_requests": [
+    "Compute a CellRank fate map on a scvelo-processed pancreas AnnData with 0.8*vk + 0.2*ck and predict 4 terminal states",
+    "Pull the Beta fate probability into obs['beta_fate'] and plot it on UMAP alongside cluster labels",
+    "Build a branch-aware gene-trend plot for Alpha vs Beta with a shared endocrine trunk",
+    "Make a multi-module dynamic_heatmap of progenitor + 3 endocrine fates with use_fitted=True",
+    "Decide how many macrostates / terminal states to compute on a hematopoietic cohort"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "CellRank",
+    "RNA velocity",
+    "fate",
+    "GPCCA",
+    "VelocityKernel",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "cr.kernels.VelocityKernel",
+    "cr.kernels.ConnectivityKernel",
+    "cr.estimators.GPCCA",
+    "compute_macrostates",
+    "predict_terminal_states",
+    "fate_probabilities",
+    "ov.pl.branch_streamplot",
+    "ov.single.dynamic_features",
+    "layer='Ms'",
+    "ov.pl.dynamic_trends",
+    "ov.pl.dynamic_heatmap",
+    "compare_features",
+    "compare_groups",
+    "shared_trunk"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "OmicVerse-side helpers source-grounded via inspect + direct reads of omicverse/single/dynamic_features.py and omicverse/pl/_branch_streamplot.py + _dynamic_*.py. CellRank is an external dependency (pip install cellrank) whose API is documented from notebook usage cross-checked against published CellRank 2 examples. Pancreas endocrinogenesis is the canonical smoke target; no live smoke run executed."
+  },
+  "smoke_commands": []
+}

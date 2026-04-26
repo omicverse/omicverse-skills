@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "skill": "omicverse-single-cell-via-trajectory",
+  "sample_requests": [
+    "Run vanilla VIA on ov.single.scRNA_hematopoiesis() with root_user=[4823] and plot pie-chart graph + lineage probabilities + gene trends",
+    "Run velocity-guided VIA with velo_weight=0.5 on a scvelo-processed AnnData; verify the terminal states match the dominant velocity lineages",
+    "Diagnose why VIA pseudotime is reversed - likely the root_user cell is in a terminal cluster",
+    "Compare vanilla and velocity-guided VIA on the same cohort and identify lineages where they disagree",
+    "Plot per-gene GAM trends for GATA1 / MPO / SPI1 across detected lineages"
+  ],
+  "required_description_terms": [
+    "omicverse",
+    "single-cell",
+    "VIA",
+    "trajectory",
+    "RNA velocity",
+    "lineage probability",
+    "automated terminal-state",
+    "anndata"
+  ],
+  "required_sections": [
+    "## Goal",
+    "## Quick Workflow",
+    "## Interface Summary",
+    "## Boundary",
+    "## Branch Selection",
+    "## Input Contract",
+    "## Minimal Execution Patterns",
+    "## Validation",
+    "## Resource Map"
+  ],
+  "required_body_terms": [
+    "ov.single.pyVIA",
+    "adata_key",
+    "adata_ncomps",
+    "root_user",
+    "velocity_matrix",
+    "gene_matrix",
+    "velo_weight",
+    "pca_loadings",
+    "v0.run()",
+    "plot_piechart_graph",
+    "plot_trajectory_gams",
+    "plot_stream",
+    "plot_lineage_probability",
+    "plot_gene_trend",
+    "plot_gene_trend_heatmap",
+    "plot_clustergraph"
+  ],
+  "required_paths": [
+    "reference.md",
+    "references/source-grounding.md"
+  ],
+  "validation_budget": {
+    "smoke_mode": "skipped",
+    "max_wall_seconds": 0,
+    "skip_reason": "Source-grounded via direct reading of omicverse/single/_via.py (the bare module import currently triggers a matplotlib-annotation NameError, documented in source-grounding; tutorial usage via ov.single.pyVIA after matplotlib import works correctly). Setty hematopoiesis dataset is the canonical smoke target; no live smoke run executed."
+  },
+  "smoke_commands": []
+}
