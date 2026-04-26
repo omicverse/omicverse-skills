@@ -48,12 +48,11 @@ jobs:
 
       - name: Verify tag matches package version
         run: |
-          TAG="${GITHUB_REF##*/}"          # refs/tags/v0.3.0 → v0.3.0
-          TAG_VERSION="${TAG#v}"           # v0.3.0          → 0.3.0
-          PKG_VERSION=$(python -c \
-            "import tomllib, pathlib;
-             p=pathlib.Path('pyproject.toml').read_bytes();
-             print(tomllib.loads(p.decode())['project']['version'])")
+          TAG="${GITHUB_REF##*/}"
+          TAG_VERSION="${TAG#v}"
+          # Pull the version line from pyproject.toml; awk avoids any
+          # tomllib / heredoc quoting fragility.
+          PKG_VERSION=$(awk -F\" '/^version[[:space:]]*=/ {print $2; exit}' pyproject.toml)
           echo "tag=$TAG_VERSION  pyproject=$PKG_VERSION"
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
             echo "::error::tag ($TAG_VERSION) does not match pyproject.toml version ($PKG_VERSION)"
