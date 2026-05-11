@@ -1,6 +1,6 @@
 ---
 name: omicverse-single-cell-monocle2-trajectory
-description: Monocle2-style single-cell trajectory analysis on AnnData via the `ov.single.Monocle` class - DDRTree pseudotime + branch detection + per-gene differential test + BEAM branch-dependent gene discovery, plus the canonical pseudotime visualisations (`branch_streamplot`, `dynamic_heatmap`, `dynamic_trends`). Use when fitting a Monocle2 trajectory on an annotated AnnData, when deriving branch-aware gene trends with `dynamic_features`, or when reproducing `t_traj_monocle2_olsson`.
+description: Monocle2-style single-cell trajectory analysis on AnnData via the `ov.single.Monocle` class - DDRTree pseudotime + branch detection + per-gene differential test + BEAM branch-dependent gene discovery, plus the unified `ov.pl.trajectory` / `ov.pl.trajectory_overlay` / `ov.pl.trajectory_tree` plotters and the shared pseudotime visualisations (`branch_streamplot`, `dynamic_heatmap`, `dynamic_trends`). Use when fitting a Monocle2 trajectory on an annotated AnnData, when deriving branch-aware gene trends with `dynamic_features`, or when reproducing `t_traj_monocle2`.
 ---
 
 # OmicVerse Single-Cell — Monocle2 Trajectory
@@ -16,9 +16,13 @@ Take a preprocessed annotated single-cell `AnnData` (typically myeloid / hematop
 1. Load a preprocessed AnnData with cell-type labels (`obs[<celltype>]`) and counts in `.X`. The Olsson 2016 hematopoietic dataset is the canonical demo.
 2. Instantiate: `mono = Monocle(adata)`. Stores a copy internally; `mono.adata` is the working object.
 3. **Preprocess + ordering genes**: `mono.preprocess()` (variance-stabilises + filters) → `mono.select_ordering_genes(max_genes=1000)` (high-variance + DEG-driven gene selection); inspect with `mono.plot_ordering_genes(figsize=(5, 4))`. Result: `mono.adata.var['use_for_ordering']` boolean mask.
-4. **Fit trajectory**: by default `mono.fit_trajectory()` runs DDRTree on the ordering-gene subspace and writes `obs['Pseudotime']`, `obs['State']` (DDRTree-derived branch state). Call directly OR run via `mono.plot_trajectory(...)` which auto-fits on first call.
-5. **Plot**: `mono.plot_trajectory(color_by='State', cell_size=2.4, cell_link_size=0.5, show_branch_points=False, figsize=(6, 4))` for the canonical Monocle2 tree-on-DDRTree-2D figure.
-6. **Branch streamplot** (alternative pseudotime view): `ov.pl.branch_streamplot(mono.adata, group_key=<celltype>, pseudotime_key='Pseudotime')` — colour-coded streamlines along pseudotime.
+4. **Reduce dimension to DDRTree**: `mono.reduce_dimension(max_components=4, verbose=False)` builds the DDRTree embedding into `adata.obsm['X_DDRTree']`.
+5. **Order cells / pick root**: `mono.order_cells(root_by_column='subtype', root_by_value='Lsk')` picks the trajectory root and writes `obs['Pseudotime']` + `obs['State']`. The combined `reduce_dimension` + `order_cells` pair replaces the older one-shot `fit_trajectory` / auto-fit-on-first-plot flow.
+6. **Plot**: use the unified trajectory plotters with `method='monocle'`:
+   - `ov.pl.trajectory(mono.adata, method='monocle', basis='X_DDRTree', color='subtype')` — DDRTree backbone scatter (replaces `mono.plot_trajectory(...)`).
+   - `ov.pl.trajectory_overlay(mono.adata, ax=ax, method='monocle')` — overlay the backbone on an existing `ov.pl.embedding(..., basis='X_DDRTree')` axis.
+   - `ov.pl.trajectory_tree(mono.adata, method='monocle', color='subtype')` — abstract tree layout (clean topology view, useful when the DDRTree-2D scatter is too dense).
+7. **Branch streamplot** (alternative pseudotime view): `ov.pl.branch_streamplot(mono.adata, group_key=<celltype>, pseudotime_key='Pseudotime')` — colour-coded streamlines along pseudotime.
 7. **Differential gene test along pseudotime**: re-instantiate on the ordering-gene subset for speed: `mono_ord = Monocle(mono.adata[:, ordering_genes].copy())` then `de = mono_ord.differential_gene_test(cores=-1)`. Filter `de[(de['qval']<0.01) & (de['status']=='OK')]` for significant trends.
 8. **Heatmap of top trending genes**: `ov.pl.dynamic_heatmap(mono.adata, pseudotime='Pseudotime', var_names=top40, cell_annotation='State', use_fitted=True, cell_bins=200, ...)`.
 9. **Per-gene trends**: `res = ov.single.dynamic_features(mono.adata, genes=marker_genes, pseudotime='Pseudotime', store_raw=True, raw_obs_keys=['State'])` → `ov.pl.dynamic_trends(res, genes=marker_genes, add_point=True, point_color_by='State', ...)`.
@@ -36,10 +40,15 @@ Class methods (chained or independent):
 - `mono.preprocess()` — variance-stabilising normalisation; canonical Monocle2 prep.
 - `mono.select_ordering_genes(max_genes=1000)` — populates `var['use_for_ordering']`. The DEG-driven side combines with high-variance genes.
 - `mono.plot_ordering_genes(figsize=...)` — diagnostic plot of the ordering-gene selection.
-- `mono.fit_trajectory(...)` — DDRTree backbone fit; writes `obs['Pseudotime']`, `obs['State']`. Triggered automatically by `plot_trajectory` on first call.
-- `mono.plot_trajectory(color_by='State', cell_size=..., cell_link_size=..., show_branch_points=..., figsize=..., palette=..., ...)` — Monocle2's signature DDRTree-2D scatter.
+- `mono.reduce_dimension(max_components=4, verbose=False)` — builds DDRTree embedding into `adata.obsm['X_DDRTree']` and stores the principal-graph state used by the unified trajectory plotters.
+- `mono.order_cells(root_by_column='subtype', root_by_value='Lsk')` — picks the trajectory root and writes `obs['Pseudotime']` + `obs['State']`. Together with `reduce_dimension(...)` this replaces the older `fit_trajectory(...)` flow; `fit_trajectory` may still be available as a backwards-compatible alias.
 - `mono.differential_gene_test(cores=-1, ...) → pd.DataFrame` — per-gene VGAM-style tests for variation along pseudotime; `cores=-1` uses all cores. Output columns: `pval`, `qval`, `status` (`'OK'` / `'FAIL'`), `gene_id`.
 - `mono.BEAM(branch_point=1, cores=-1, ...) → pd.DataFrame` — Branch Expression Analysis Modeling: per-gene tests for branch-dependent expression at the named branch point. Same output schema as `differential_gene_test`.
+
+Unified `ov.pl` trajectory plotters (replace the legacy `mono.plot_trajectory(...)` method; shared with the other trajectory skills):
+- `ov.pl.trajectory(mono.adata, method='monocle', basis='X_DDRTree', color=...)` — DDRTree-2D scatter with the principal-graph backbone overlayed.
+- `ov.pl.trajectory_overlay(mono.adata, ax=ax, method='monocle')` — overlay backbone on an existing `ov.pl.embedding(..., basis='X_DDRTree')` axis.
+- `ov.pl.trajectory_tree(mono.adata, method='monocle', color=...)` — abstract tree layout of the principal graph (useful when the DDRTree-2D scatter is too dense).
 
 Module-level (not method on `Monocle`):
 - `ov.single.dynamic_features(adata|dict[name→adata], genes, pseudotime='pseudotime', *, groupby=None, groups=None, layer=None, use_raw=False, subsets=None, weights=None, distribution='normal', link='identity', n_splines=8, spline_order=3, grid_size=200, confidence_level=0.95, min_cells=20, min_variance=1e-08, store_raw=False, raw_obs_keys=None, key_added='dynamic_features', verbose=True) → DynamicFeaturesResult`. Generic GAM backend usable across any pseudotime field.
@@ -76,7 +85,7 @@ Module-level (not method on `Monocle`):
 - Limit to physical cores (not hyperthreaded) for best throughput.
 
 **`BEAM` branch_point**
-- `branch_point=1` — first branch in the DDRTree (tutorial default for the Olsson hematopoietic dataset). Inspect `mono.adata.uns` or the `plot_trajectory` figure to identify the right branch number.
+- `branch_point=1` — first branch in the DDRTree (tutorial default for the Olsson hematopoietic dataset). Inspect `mono.adata.uns` or the `ov.pl.trajectory(..., method='monocle')` / `ov.pl.trajectory_tree(...)` figure to identify the right branch number.
 - For multi-branch trajectories, run BEAM per branch point separately and concatenate; never run on `branch_point=0` (the trunk) — that's not a branch.
 
 **`dynamic_features` `distribution` / `link`**
@@ -107,7 +116,7 @@ Module-level (not method on `Monocle`):
 - `AnnData` with raw counts (or normalised log-counts) in `.X`. `obs` should carry the cell-type column you'll pass to `branch_streamplot` (`group_key`) and trend plots (`point_color_by`).
 - For Olsson-style data: `obs` includes a `subtype` column (`'Gmp'`, `'LK'`, `'Cmp'`, etc.); the WT subset is the canonical demo (`adata_wt = adata[adata.obs['genotype'] == 'WT']`).
 - `var` has gene symbols (or IDs); `differential_gene_test` indexes by `var_names`.
-- `obs['Pseudotime']` and `obs['State']` are populated by `fit_trajectory`. Don't pass these in; they'll be overwritten.
+- `obs['Pseudotime']` and `obs['State']` are populated by `order_cells(...)` (or the legacy `fit_trajectory(...)` alias). Don't pass these in; they'll be overwritten.
 
 ## Minimal Execution Patterns
 
@@ -127,12 +136,19 @@ mono = Monocle(adata_wt)
 mono.preprocess()
 mono.select_ordering_genes(max_genes=1000)
 mono.plot_ordering_genes(figsize=(5, 4)); plt.show()
+mono.reduce_dimension(max_components=4, verbose=False)
+mono.order_cells(root_by_column='subtype', root_by_value='Lsk')
 
-# 3) Plot trajectory (auto-fits on first call)
-mono.plot_trajectory(
-    color_by='State', cell_size=2.4, cell_link_size=0.5,
-    show_branch_points=False, figsize=(6, 4),
-); plt.show()
+# 3) Plot trajectory — unified ov.pl interface (method='monocle')
+ov.pl.trajectory(mono.adata, method='monocle', basis='X_DDRTree', color='subtype')
+ov.pl.trajectory(mono.adata, method='monocle', basis='X_DDRTree', color='State')
+
+fig, ax = plt.subplots(figsize=(4, 4))
+ov.pl.embedding(mono.adata, basis='X_DDRTree', color='subtype',
+                ax=ax, show=False, size=50)
+ov.pl.trajectory_overlay(mono.adata, ax=ax, method='monocle')
+
+ov.pl.trajectory_tree(mono.adata, method='monocle', color='subtype')
 
 # 4) Branch streamplot view
 fig, ax = ov.pl.branch_streamplot(
@@ -207,7 +223,8 @@ top_branch = sig_beam.head(4).index.tolist()
 ## Validation
 
 - After `select_ordering_genes`: `mono.adata.var['use_for_ordering'].sum()` should be close to `max_genes` (slight under is OK if some genes failed variance filter; large under means filter was too aggressive).
-- After `fit_trajectory` (or `plot_trajectory`): `mono.adata.obs['Pseudotime']` and `mono.adata.obs['State']` are populated, no NaNs.
+- After `reduce_dimension(...)`: `mono.adata.obsm['X_DDRTree']` is populated.
+- After `order_cells(...)` (or the legacy `fit_trajectory(...)`): `mono.adata.obs['Pseudotime']` and `mono.adata.obs['State']` are populated, no NaNs.
 - `differential_gene_test`: `(de['status'] == 'OK').sum() / len(de)` should be > 0.9. Many `'FAIL'` rows indicate genes with insufficient signal after filtering — usually fine, just lowers the universe of testable genes.
 - `(de['qval'] < 0.01).sum()` typically yields 50–500 hits on Olsson-scale cohorts; far fewer indicates the trajectory is poorly defined.
 - BEAM hits should be a *subset* of `differential_gene_test` hits (with the additional branch-dependence constraint). If BEAM returns *more* hits than DEG, something is mis-specified (likely the wrong `branch_point`).
@@ -228,5 +245,5 @@ top_branch = sig_beam.head(4).index.tolist()
 - "Show per-gene trends for Gfi1 / Irf8 / Elane along Pseudotime with cell points coloured by State."
 
 ## References
-- Tutorial notebook: [`t_traj_monocle2_olsson.ipynb`](https://omicverse.readthedocs.io/en/latest/Tutorials-single/t_traj_monocle2_olsson/) — Olsson 2016 hematopoietic walkthrough.
+- Tutorial notebook: [`t_traj_monocle2.ipynb`](https://omicverse.readthedocs.io/en/latest/Tutorials-single/t_traj_monocle2/) — Olsson 2016 hematopoietic walkthrough (renamed from `t_traj_monocle2_olsson` in commit `12ce9f4`).
 - Live API verified — see [`references/source-grounding.md`](references/source-grounding.md).

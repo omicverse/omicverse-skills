@@ -110,7 +110,7 @@ SKILL_NOTEBOOK_MAP: Mapping[str, list[str]] = {
     "bulk-to-single-deconvolution":         ["t_bulk2single.ipynb"],
     "bulk-trajblend-interpolation":         ["t_bulktrajblend.ipynb"],
     "bulk-wgcna-analysis":                  ["t_wgcna.ipynb"],
-    "fastq-analysis":                       ["t_mapping_STAR.ipynb",
+    "bulk-fastq-quantification":            ["t_mapping_STAR.ipynb",
                                               "t_mapping_kbpython.ipynb"],
     "tcga-preprocessing":                   ["t_tcga.ipynb"],
 
@@ -186,7 +186,7 @@ SKILL_NOTEBOOK_MAP: Mapping[str, list[str]] = {
         "t_traj_palantir.ipynb",
         "t_traj_slingshot.ipynb",
     ],
-    "single-cell-monocle2-trajectory":      ["t_traj_monocle2_olsson.ipynb"],
+    "single-cell-monocle2-trajectory":      ["t_traj_monocle2.ipynb"],
     "single-cell-via-trajectory":           ["t_via.ipynb",
                                               "t_via_velo.ipynb"],
     "single-cell-sctour-trajectory":        ["t_traj_sctour.ipynb"],
@@ -223,22 +223,14 @@ SKILL_NOTEBOOK_MAP: Mapping[str, list[str]] = {
     "single-to-spatial-mapping":            ["t_single2spatial.ipynb"],
 
     # ------------------------------------------------------------------
-    # Foundation models
+    # Foundation models — collapsed to canonical 5 via ov.llm.SCLLMManager
+    # (upstream commit 7bde983; legacy per-model t_fm_* tutorials removed)
     # ------------------------------------------------------------------
-    "fm-foundation-models": sorted({
-        "t_cellplm.ipynb", "t_dr.ipynb",
-        "t_fm.ipynb",
-        "t_fm_aidocell.ipynb", "t_fm_atacformer.ipynb",
-        "t_fm_cell2sentence.ipynb", "t_fm_cellfm.ipynb",
-        "t_fm_chatcell.ipynb", "t_fm_genecompass.ipynb",
-        "t_fm_genept.ipynb", "t_fm_langcell.ipynb",
-        "t_fm_nicheformer.ipynb", "t_fm_pulsar.ipynb",
-        "t_fm_scbert.ipynb", "t_fm_sccello.ipynb",
-        "t_fm_scmulan.ipynb", "t_fm_scplantllm.ipynb",
-        "t_fm_scprint.ipynb", "t_fm_tabula.ipynb",
-        "t_fm_tgpt.ipynb",
-        "t_geneformer.ipynb", "t_scfoundation.ipynb",
-        "t_scgpt.ipynb", "t_scmulan.ipynb",
+    "single-cell-foundation-model": sorted({
+        "t_cellplm.ipynb",
+        "t_geneformer.ipynb",
+        "t_scfoundation.ipynb",
+        "t_scgpt.ipynb",
         "t_uce.ipynb",
     }),
 

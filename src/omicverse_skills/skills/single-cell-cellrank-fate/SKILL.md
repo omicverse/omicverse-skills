@@ -30,6 +30,7 @@ This skill is the **post-velocity** skill: assumes velocity is already computed 
 8. **Per-fate gene trends**: filter cells to the fate of interest (`adata_beta = adata[adata.obs['beta_fate'] > 0.15]`), then run `ov.single.dynamic_features(adata_beta, genes=[...], pseudotime='development_pseudotime', layer='Ms', ...)` and plot with `ov.pl.dynamic_trends(compare_features=True, ...)`. The `Ms` layer (smoothed-spliced from scvelo) is the appropriate input for velocity-derived workflows.
 9. **Branch-aware comparison** between two terminal-state fates (e.g. Alpha vs Beta in pancreas): pass `groupby='clusters', groups=branch_clusters` to `dynamic_features`, then plot with `compare_groups=True, split_time=<trunk-end>, shared_trunk=True`.
 10. **Multi-module dynamic heatmap**: organise marker genes into named programs (`{'Endocrine progenitor': [...], 'Alpha fate': [...], ...}`) and pass to `ov.pl.dynamic_heatmap(var_names=<dict>, ...)` for a panel-style figure.
+11. **Unified trajectory overlay (optional)**: after `velocity_pseudotime` is in `adata.obs`, draw the CellRank-derived PAGA backbone with `ov.pl.trajectory(adata, method='cellrank', ...)` or overlay it on an existing UMAP via `ov.pl.trajectory_overlay(adata, ax=ax, method='cellrank')`. Useful for placing the kernel-projection figure and the topology figure side by side.
 
 ## Interface Summary
 
@@ -44,6 +45,8 @@ External (CellRank — `pip install cellrank`):
   - `.macrostates`, `.terminal_states` — categorical columns.
 
 OmicVerse-side (this skill's contribution):
+- `ov.pl.trajectory(adata, *, method='cellrank', basis='X_umap', color=...)` — unified trajectory backbone plot, shared with the other trajectory skills (commit `4f28ab6`). Use `method='cellrank'` so the development-pseudotime / fate-driven topology is rendered consistently with diffusion / slingshot / palantir / monocle / sctour.
+- `ov.pl.trajectory_overlay(adata, *, ax, method='cellrank', ...)` — overlay the CellRank-derived PAGA backbone on an existing `ov.pl.embedding(...)` axis. Useful for composing a velocity-stream view and a graph-overlay view in one figure.
 - `ov.pl.branch_streamplot(adata, *, group_key, pseudotime_key, trunk_groups=[...], branch_center=0.5, figsize=..., xlabel=..., show=True)` — stream + branch view of per-cluster pseudotime.
 - `ov.pl.embedding(adata, *, basis='X_umap', color=[...], cmap='Reds', frameon='small')` — generic embedding plot; colour by fate probability.
 - `ov.single.dynamic_features(adata, genes, pseudotime, *, layer='Ms', groupby=None, groups=None, n_splines=8, store_raw=True, raw_obs_keys=...)` — same API as the trajectory skills, but `layer='Ms'` is the key choice for velocity workflows.

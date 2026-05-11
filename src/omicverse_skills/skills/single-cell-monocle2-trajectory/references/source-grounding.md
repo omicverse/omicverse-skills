@@ -2,7 +2,7 @@
 
 ## Interfaces Checked
 
-`omicverse.single.Monocle` and the trajectory-related plotting / GAM API. Verified via `inspect.signature` + `inspect.getdoc` + direct reading of `omicverse/single/_monocle*.py` (or wherever the Monocle implementation lives) and `omicverse/single/dynamic_features.py`. Cross-checked against `t_traj_monocle2_olsson.ipynb`.
+`omicverse.single.Monocle` and the trajectory-related plotting / GAM API. Verified via `inspect.signature` + `inspect.getdoc` + direct reading of `omicverse/single/_monocle*.py` (or wherever the Monocle implementation lives) and `omicverse/single/dynamic_features.py`. Cross-checked against `t_traj_monocle2.ipynb` (renamed from `t_traj_monocle2_olsson` in tutorials commit `12ce9f4`).
 
 ## Live signatures
 

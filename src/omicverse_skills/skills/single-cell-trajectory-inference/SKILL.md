@@ -16,11 +16,15 @@ Run the reusable trajectory-analysis part of the OmicVerse notebook on a cluster
 3. Instantiate `ov.single.TrajInfer(...)` with explicit `basis`, `use_rep`, `n_comps`, `n_neighbors`, and `groupby`.
 4. Call `set_origin_cells(...)` before every trajectory run; call `set_terminal_cells(...)` when the branch supports or benefits from constrained terminal states.
 5. Run `TrajInfer.inference(...)`.
-6. If you need a coarse lineage graph, run `ov.utils.cal_paga(...)` on the resulting pseudotime and then `ov.utils.plot_paga(...)`.
-7. If you chose `palantir`, optionally run `palantir_cal_branch(...)` and then `palantir_cal_gene_trends(...)` only when the extra dependencies and expression layer are available.
-8. Validate the expected `obs`, `obsm`, `varm`, and `uns` keys before treating the result as finished.
+6. For lineage topology, use the unified `ov.pl.trajectory(...)` / `ov.pl.trajectory_overlay(...)` plotters — they consume the trajectory state written into `adata` and share the same visual grammar across `diffusion_map` / `slingshot` / `palantir` / `monocle` / `sctour` / CellRank. `ov.utils.cal_paga(...)` + `ov.utils.plot_paga(...)` remain valid for explicit PAGA computation.
+7. Summarize the branch structure with `ov.pl.branch_streamplot(adata, group_key=..., pseudotime_key=...)` — river-style plot driven only by a pseudotime vector and cluster labels, interoperable across methods.
+8. Fit marker trends with the shared GAM stack: `ov.single.dynamic_features(adata, genes=..., pseudotime=...)` → `ov.pl.dynamic_trends(res, ...)` for per-gene curves and `ov.pl.dynamic_heatmap(adata, var_names=..., pseudotime=...)` for many-gene panels. The same backend is used by every trajectory skill, so output is interoperable.
+9. If you chose `palantir`, optionally run `palantir_cal_branch(...)` and then `palantir_cal_gene_trends(...)` only when the extra dependencies and expression layer are available.
+10. Validate the expected `obs`, `obsm`, `varm`, and `uns` keys before treating the result as finished.
 
 ## Interface Summary
+
+**Trajectory fitting (`TrajInfer`)**
 
 - `ov.single.TrajInfer(adata, basis='X_umap', use_rep='X_pca', n_comps=50, n_neighbors=15, groupby='clusters')` creates the shared trajectory wrapper.
 - `TrajInfer.set_origin_cells(origin)` stores the root label used by `diffusion_map`, `slingshot`, and `palantir`.
@@ -29,8 +33,19 @@ Run the reusable trajectory-analysis part of the OmicVerse notebook on a cluster
 - `TrajInfer.palantir_cal_branch(q=..., eps=..., masks_key=...)` stores branch masks after a Palantir run.
 - `TrajInfer.palantir_cal_gene_trends(layers='MAGIC_imputed_data')` computes lineage-wise trends after Palantir branch masks exist.
 - `TrajInfer.palantir_plot_gene_trends(genes)` and `TrajInfer.palantir_plot_pseudotime(...)` are optional visualization helpers after the corresponding Palantir outputs exist.
-- `ov.utils.cal_paga(adata, groups=..., vkey='paga', use_time_prior=..., minimum_spanning_tree=True)` computes the coarse topology summary.
-- `ov.utils.plot_paga(...)` overlays the PAGA graph on the chosen basis or draws the graph layout directly.
+
+**Unified `ov.pl` trajectory plotting (shared across methods — added by commit `4f28ab6`)**
+
+- `ov.pl.trajectory(adata, *, method='diffusion'|'slingshot'|'palantir'|'monocle'|'sctour'|'cellrank', basis='X_umap', color=...)` draws the trajectory backbone on the chosen embedding. Replaces method-specific plot calls.
+- `ov.pl.trajectory_overlay(adata, *, ax, method=..., ...)` overlays the trajectory backbone on an existing axis already populated by `ov.pl.embedding(...)`. Use when you want a custom-styled UMAP with the PAGA / curve overlay on top.
+- `ov.pl.branch_streamplot(adata, *, group_key, pseudotime_key, trunk_groups=None, branch_center=0.5, figsize=..., show=False)` — river-style per-cluster pseudotime view. Works with any pseudotime key (`dpt_pseudotime`, `palantir_pseudotime`, `slingshot_pseudotime`, `sctour_pseudotime`, `velocity_pseudotime`, etc.).
+- `ov.pl.dynamic_heatmap(adata, *, pseudotime, var_names, cell_annotation=None, use_fitted=True, cell_bins=200, ...)` — GAM-fitted heatmap of many genes along pseudotime; `var_names` accepts a list or `{program_name: [genes]}` dict for multi-module panels.
+- `ov.utils.cal_paga(adata, groups=..., vkey='paga', use_time_prior=..., minimum_spanning_tree=True)` still computes an explicit PAGA topology summary; `ov.utils.plot_paga(...)` is still valid but the `ov.pl.trajectory*` family is the canonical entrypoint in the current tutorials.
+
+**Marker-dynamics GAM stack (shared backend across all trajectory skills)**
+
+- `ov.single.dynamic_features(adata, genes, pseudotime, *, layer=None, groupby=None, groups=None, n_splines=8, store_raw=True, raw_obs_keys=..., key_added='dynamic_features')` fits per-gene GAM curves. Pass `groupby + groups` for branch-aware fits.
+- `ov.pl.dynamic_trends(res, *, genes, compare_features=False, compare_groups=False, split_time=None, shared_trunk=True, add_point=True, point_color_by=..., line_style_by=..., ...)` plots single-line global trends, multi-marker overlays, or branch-aware comparisons.
 
 Read `references/source-grounding.md` before adding more interface-specific details.
 
@@ -78,21 +93,32 @@ traj = ov.single.TrajInfer(
 traj.set_origin_cells("Ductal")
 traj.inference(method="diffusion_map")
 
-ov.utils.cal_paga(
-    adata,
-    groups="clusters",
-    vkey="paga",
-    use_time_prior="dpt_pseudotime",
+# Unified trajectory plotting — canonical in the current tutorials
+ov.pl.trajectory(adata, method="diffusion", basis="X_umap", color="clusters")
+
+# Or overlay on an existing custom embedding
+fig, ax = ov.plt.subplots(figsize=(4, 4))
+ov.pl.embedding(adata, basis="X_umap", color="clusters", ax=ax, show=False)
+ov.pl.trajectory_overlay(adata, ax=ax, method="diffusion")
+
+# River-style branch view
+ov.pl.branch_streamplot(
+    adata, group_key="clusters", pseudotime_key="dpt_pseudotime", show=False,
 )
-ov.utils.plot_paga(
-    adata,
-    basis="umap",
-    color="clusters",
-    title="PAGA DPT graph",
-    min_edge_width=2,
-    node_size_scale=1.5,
-    show=False,
+
+# Marker trends along DPT pseudotime
+res = ov.single.dynamic_features(
+    adata, genes=["Pdx1", "Ins1", "Gcg"],
+    pseudotime="dpt_pseudotime", store_raw=True, raw_obs_keys=["clusters"],
 )
+ov.pl.dynamic_trends(
+    res, genes=["Pdx1", "Ins1", "Gcg"],
+    add_point=True, point_color_by="clusters",
+)
+
+# Optional: explicit PAGA still supported
+ov.utils.cal_paga(adata, groups="clusters", vkey="paga", use_time_prior="dpt_pseudotime")
+ov.utils.plot_paga(adata, basis="umap", color="clusters", show=False)
 ```
 
 ```python
@@ -148,6 +174,8 @@ traj.inference(method="slingshot", num_epochs=1, debug_axes=axes)
 - After `palantir_cal_branch(...)`, confirm `adata.obsm['branch_masks']` exists.
 - After `palantir_cal_gene_trends(...)`, confirm one or more `palantir_gene_trends_*` or `gene_trends_*` keys exist in `adata.varm`.
 - After `ov.utils.cal_paga(...)`, confirm `adata.uns['paga']` exists with connectivity and transition-confidence entries.
+- After `ov.pl.trajectory(...)` / `ov.pl.trajectory_overlay(...)`, the figure should show the backbone connecting clusters in a topology consistent with the chosen `method`; an empty overlay means the trajectory state was not written into `adata` (re-run `TrajInfer.inference(...)` or `ov.utils.cal_paga(...)`).
+- After `ov.single.dynamic_features(...)`, the returned result should have `.failed` (list of skipped genes with reasons) and a populated per-gene fit table; treat `.failed` non-empty as expected for low-variance / sparse genes.
 - If you only validated a bounded smoke path, say so; do not claim full notebook reproduction.
 
 ## Resource Map

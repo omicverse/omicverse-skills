@@ -12,14 +12,14 @@ Follow this skill to run the end-to-end differential expression (DEG) workflow s
 ## Instructions
 1. **Set up the session**
    - Import `omicverse as ov`, `scanpy as sc`, and `matplotlib.pyplot as plt`.
-   - Call `ov.plot_set()` so downstream plots adopt omicverse styling.
+   - Call `ov.style()` so downstream plots adopt omicverse styling.
 2. **Prepare ID mapping assets**
    - When gene IDs must be converted to gene symbols, instruct the user to download mapping pairs via `ov.utils.download_geneid_annotation_pair()` and store them under `genesets/`.
    - Mention the available prebuilt genomes (T2T-CHM13, GRCh38, GRCh37, GRCm39, danRer7, danRer11) and that users can generate their own mapping from GTF files if needed.
 3. **Load the raw counts**
    - Read tab-delimited featureCounts output with `ov.pd.read_csv(..., sep='\t', header=1, index_col=0)`.
    - Strip trailing `.bam` segments from column names using list comprehension so sample IDs are clean.
-4. **Map gene identifiers**
+4. **Map gene identifiers(optional)**
    - Run `ov.bulk.Matrix_ID_mapping(counts_df, 'genesets/pair_<GENOME>.tsv')` to replace `gene_id` entries with gene symbols.
 5. **Initialise the DEG object**
    - Create `dds = ov.bulk.pyDEG(mapped_counts)`.
