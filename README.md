@@ -47,6 +47,7 @@ spatial 数据想做 deconvolution，三个方法不知道怎么选、怎么装�
 | `single-cell-sctour-trajectory` | scTour 连续时间轨迹建模 |
 | `single-cell-cellphonedb-communication` | CellPhoneDB v5 配体-受体通讯分析 |
 | `single-cell-differential-expression` | Wilcoxon、t-test、memento-DE 单细胞差异表达 |
+| `scissor-cell-selection` | Scissor 表型关联细胞选择：Gaussian、Binomial、Cox，显式图与表达层及可重现性检查 |
 | `single-cell-differential-abundance` | scCODA、Milopy、Milo 细胞组成差异分析 |
 | `single-cell-cytotrace2` | CytoTRACE2 发育潜能预测 |
 | `single-cell-cnmf-program-discovery` | cNMF 基因表达程序发现 |
