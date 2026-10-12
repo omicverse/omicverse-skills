@@ -21,7 +21,9 @@ python -m pip install "git+https://github.com/omicverse/py-Scissors.git@cc630ae8
 ```
 
 Check the active interpreter and record the installed backend and OmicVerse
-versions. Installing the backend does not add `ov.single.Scissor` to an older
+versions. An earlier checkout may also report `0.1.0.dev5`; when replacement
+is requested, add `--force-reinstall --no-deps` to the pinned backend command
+to replace that revision without reinstalling the scientific dependencies. Installing the backend does not add `ov.single.Scissor` to an older
 OmicVerse version. For a missing adapter, use the independent backend or the
 [reviewed OmicVerse contribution](https://github.com/omicverse/omicverse/pull/988) explicitly.
 The validated adapter revision is `b04249097f35ab261fcbc6e30becfb1d85cb046b`
