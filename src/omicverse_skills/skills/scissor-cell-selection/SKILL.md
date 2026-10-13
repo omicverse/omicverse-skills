@@ -9,7 +9,7 @@ Use the user's supplied data and analysis choices. The backend import is
 `scissor_py`; the unrelated `pyscissor` distribution is not a substitute. The
 OmicVerse integration is optional. Check the installed version and whether
 `ov.single.Scissor` exists before using it (it is on OmicVerse `master` since
-omicverse/omicverse#988 and ships with the first release after 2.3.2). Do not install packages, download datasets or publish results
+omicverse/omicverse#988; releases up to 2.3.2 do not include it). Do not install packages, download datasets or publish results
 as an implicit side effect of a library call.
 
 ## Backend and version boundary
