@@ -8,7 +8,8 @@ description: Select bulk-phenotype-associated single cells with the independent 
 Use the user's supplied data and analysis choices. The backend import is
 `scissor_py`; the unrelated `pyscissor` distribution is not a substitute. The
 OmicVerse integration is optional. Check the installed version and whether
-`ov.single.Scissor` exists before using it; the adapter PR must be merged or its reviewed revision installed before use. Do not install packages, download datasets or publish results
+`ov.single.Scissor` exists before using it (it is on OmicVerse `master` since
+omicverse/omicverse#988 and ships with the first release after 2.3.2). Do not install packages, download datasets or publish results
 as an implicit side effect of a library call.
 
 ## Backend and version boundary
@@ -24,10 +25,8 @@ Check the active interpreter and record the installed backend and OmicVerse
 versions. An earlier checkout may also report `0.1.0.dev5`; when replacement
 is requested, add `--force-reinstall --no-deps` to the pinned backend command
 to replace that revision without reinstalling the scientific dependencies. Installing the backend does not add `ov.single.Scissor` to an older
-OmicVerse version. For a missing adapter, use the independent backend or the
-[reviewed OmicVerse contribution](https://github.com/omicverse/omicverse/pull/988) explicitly.
-The validated adapter revision is `b04249097f35ab261fcbc6e30becfb1d85cb046b`
-in `hurry060215-tech/omicverse`; it is not yet a merged upstream release.
+OmicVerse version. For a missing adapter, use the independent backend or
+install OmicVerse from `master` (adapter merged as `db7be141`, PR #988).
 
 ## Scientific input decisions
 
@@ -51,6 +50,21 @@ in `hurry060215-tech/omicverse`; it is not yet a merged upstream release.
   Gaussian curvature, stopping rules and Cox lambda bookkeeping. Never silently
   switch semantics after an error. Read the installed project's
   [semantics documentation](https://github.com/omicverse/py-Scissors/blob/cc630ae828149202b553fb7dfdaeda2d0b94d1d7/docs/SEMANTICS.md) for the compatibility boundary.
+
+## Real-data practicalities
+
+- Bulk matrices such as TCGA often contain duplicated gene symbols, which the
+  API rejects. Resolve them explicitly and say how; keeping the first row per
+  symbol reproduces the R implementation's implicit indexing.
+- The dense-memory guard `max_dense_bytes` (default 1e9) is checked on the
+  selected single-cell layer before gene intersection. A few thousand cells
+  with all ~33k genes already exceed it; raise it deliberately
+  (e.g. `max_dense_bytes=4_000_000_000`) after checking available memory.
+- `official` semantics refuses Cox/Gaussian on a connected graph, so real Cox
+  analyses need `semantics="corrected"`; binomial can stay `official`.
+- Worked example on real data (LUAD cancer cells guided by TCGA survival and
+  *TP53* status, reproducing the official Scissor tutorial):
+  `Tutorials-single/t_scissor.ipynb` in omicverse-tutorials.
 
 ## Fit and retain evidence
 
